@@ -12,7 +12,9 @@ import {
   BookOpen,
   Bug,
   Settings,
+  LogOut,
 } from "lucide-react";
+import { logoutAction } from "@/app/actions/auth";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -63,9 +65,18 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="px-6 py-4 border-t">
+      <div className="px-6 py-4 border-t space-y-2">
         <p className="text-xs text-muted-foreground">Last frost ~Apr 20</p>
         <p className="text-xs text-muted-foreground">First frost ~Oct 30</p>
+        <form action={logoutAction} className="pt-1">
+          <button
+            type="submit"
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <LogOut className="h-3 w-3" />
+            Sign out
+          </button>
+        </form>
       </div>
     </aside>
   );

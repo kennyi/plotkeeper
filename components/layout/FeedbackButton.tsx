@@ -19,6 +19,8 @@ export function FeedbackButton() {
   const pathname = usePathname();
   const formRef = useRef<HTMLFormElement>(null);
 
+  if (pathname.startsWith("/auth")) return null;
+
   function handleSubmit(formData: FormData) {
     formData.set("page_context", pathname);
     startTransition(async () => {
