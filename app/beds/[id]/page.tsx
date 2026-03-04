@@ -2,9 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { getBed } from "@/lib/supabase";
+import { getBed, getBedPlantings } from "@/lib/supabase";
 import { deleteBedAction } from "@/app/actions/beds";
+import { PlantingCard } from "@/components/beds/PlantingCard";
 import type { GardenBed } from "@/types";
 
 const BED_TYPE_LABELS: Record<GardenBed["bed_type"], string> = {
@@ -41,6 +41,14 @@ export default async function BedDetailPage({ params }: BedDetailPageProps) {
   } catch {
     notFound();
   }
+
+  const plantings = await getBedPlantings(params.id).catch(() => []);
+  const activePlantings = plantings.filter(
+    (p) => p.status !== "finished" && p.status !== "failed"
+  );
+  const pastPlantings = plantings.filter(
+    (p) => p.status === "finished" || p.status === "failed"
+  );
 
   const deleteBed = deleteBedAction.bind(null, params.id);
 
@@ -125,16 +133,45 @@ export default async function BedDetailPage({ params }: BedDetailPageProps) {
         )}
       </div>
 
-      {/* Plantings — Phase 2 #17 & #18 */}
+      {/* Active plantings */}
       <div className="border-t pt-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Plantings</h2>
-          <Badge variant="secondary">Coming soon</Badge>
+          <h2 className="text-lg font-semibold">
+            Plantings {activePlantings.length > 0 && (
+              <span className="text-sm font-normal text-muted-foreground ml-1">
+                ({activePlantings.length})
+              </span>
+            )}
+          </h2>
+          <Button asChild size="sm">
+            <Link href={`/beds/${params.id}/plantings/new`}>Add planting</Link>
+          </Button>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Planting tracking and status lifecycle will be added in the next step.
-        </p>
+
+        {activePlantings.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-4">
+            No active plantings. Add one to start tracking.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {activePlantings.map((p) => (
+              <PlantingCard key={p.id} planting={p} bedId={params.id} />
+            ))}
+          </div>
+        )}
       </div>
+
+      {/* History */}
+      {pastPlantings.length > 0 && (
+        <div className="border-t pt-6 mt-6">
+          <h2 className="text-lg font-semibold mb-4">History</h2>
+          <div className="space-y-3">
+            {pastPlantings.map((p) => (
+              <PlantingCard key={p.id} planting={p} bedId={params.id} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
