@@ -204,6 +204,57 @@ export async function deleteCustomJob(id: string) {
   if (error) throw error;
 }
 
+// ── Journal ──────────────────────────────────────────────────────────────────
+
+export async function getJournalEntries(limit = 50) {
+  const { data, error } = await supabase
+    .from("journal_entries")
+    .select("*, bed:garden_beds(id, name), plant:plants(id, name)")
+    .order("entry_date", { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return data as (JournalEntry & { bed?: { id: string; name: string } | null; plant?: { id: string; name: string } | null })[];
+}
+
+export async function createJournalEntry(
+  values: Omit<JournalEntry, "id" | "created_at">
+) {
+  const { data, error } = await supabase
+    .from("journal_entries")
+    .insert(values)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as JournalEntry;
+}
+
+export async function deleteJournalEntry(id: string) {
+  const { error } = await supabase
+    .from("journal_entries")
+    .delete()
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
+// ── Dashboard counts ─────────────────────────────────────────────────────────
+
+export async function getDashboardCounts() {
+  const [beds, plantings, journalEntries] = await Promise.all([
+    supabase.from("garden_beds").select("id", { count: "exact" }).eq("is_active", true),
+    supabase.from("bed_plantings").select("id, status", { count: "exact" }).not("status", "in", '("finished","failed")'),
+    supabase.from("journal_entries").select("id", { count: "exact" }),
+  ]);
+
+  return {
+    bedCount: beds.count ?? 0,
+    activePlantingCount: plantings.count ?? 0,
+    journalCount: journalEntries.count ?? 0,
+  };
+}
+
 // ── Garden Settings ───────────────────────────────────────────────────────────
 
 export async function getSettings(): Promise<Record<string, string>> {
