@@ -2,17 +2,21 @@ import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MONTH_NAMES } from "@/lib/constants";
-import { getDashboardCounts, getMonthlyJobs } from "@/lib/supabase";
+import { getDashboardCounts, getMonthlyJobs, getSettings } from "@/lib/supabase";
 
 export default async function DashboardPage() {
   const month = new Date().getMonth() + 1;
   const monthName = MONTH_NAMES[month - 1];
   const year = new Date().getFullYear();
 
-  const [counts, jobs] = await Promise.all([
+  const [counts, jobs, settings] = await Promise.all([
     getDashboardCounts().catch(() => ({ bedCount: 0, activePlantingCount: 0, journalCount: 0 })),
     getMonthlyJobs(month).catch(() => []),
+    getSettings().catch(() => ({} as Record<string, string>)),
   ]);
+
+  const ownerName = settings.owner_name || "gardener";
+  const location = settings.location || "Kildare";
 
   const jobsDoneThisMonth = jobs.filter((j) => j.is_done && j.done_year === year).length;
   const jobsRemaining = jobs.length - jobsDoneThisMonth;
@@ -21,8 +25,8 @@ export default async function DashboardPage() {
   return (
     <div>
       <Header
-        title="Good day, Ian"
-        description={`${monthName} in Kildare — here's what's happening in your garden`}
+        title={`Good day, ${ownerName}`}
+        description={`${monthName} in ${location} — here's what's happening in your garden`}
       />
 
       {/* Stat cards */}
