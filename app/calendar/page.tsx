@@ -1,13 +1,14 @@
 import { Suspense } from "react";
 import { Header } from "@/components/layout/Header";
 import { MonthSelector } from "@/components/calendar/MonthSelector";
+import { CalendarFilters } from "@/components/calendar/CalendarFilters";
 import { CalendarPlantCard } from "@/components/calendar/CalendarPlantCard";
 import { getPlantsForMonth } from "@/lib/supabase";
 import { Plant } from "@/types";
 import { KILDARE } from "@/lib/constants";
 
 interface CalendarPageProps {
-  searchParams: { month?: string };
+  searchParams: { month?: string; category?: string };
 }
 
 function getActionsForPlant(plant: Plant, month: number): string[] {
@@ -59,10 +60,10 @@ type ActionGroup = {
   plants: { plant: Plant; actions: string[] }[];
 };
 
-async function CalendarGrid({ month }: { month: number }) {
+async function CalendarGrid({ month, category }: { month: number; category?: string }) {
   let plants: Plant[];
   try {
-    plants = await getPlantsForMonth(month);
+    plants = await getPlantsForMonth(month, category || undefined);
   } catch {
     return (
       <div className="text-center py-12 text-muted-foreground">
@@ -146,6 +147,7 @@ function IrelandTips({ month }: { month: number }) {
 
 export default function CalendarPage({ searchParams }: CalendarPageProps) {
   const month = Math.min(12, Math.max(1, parseInt(searchParams.month ?? "") || new Date().getMonth() + 1));
+  const category = searchParams.category ?? "";
 
   return (
     <div>
@@ -154,11 +156,15 @@ export default function CalendarPage({ searchParams }: CalendarPageProps) {
         description="What to sow, plant out, and harvest — calibrated for Kildare, Ireland"
       />
 
-      <div className="mb-6">
+      <div className="mb-4">
         <Suspense>
           <MonthSelector currentMonth={month} />
         </Suspense>
       </div>
+
+      <Suspense>
+        <CalendarFilters />
+      </Suspense>
 
       <IrelandTips month={month} />
 
@@ -171,7 +177,7 @@ export default function CalendarPage({ searchParams }: CalendarPageProps) {
           </div>
         }
       >
-        <CalendarGrid month={month} />
+        <CalendarGrid month={month} category={category} />
       </Suspense>
     </div>
   );

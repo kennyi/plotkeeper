@@ -29,6 +29,7 @@ function parseBedForm(formData: FormData): BedFormValues {
     grid_y: null,
     is_active: true,
     notes: raw("notes") || null,
+    photo_url: raw("photo_url") || null,
   };
 }
 

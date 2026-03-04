@@ -78,6 +78,7 @@ export interface Plant {
   is_user_created: boolean;
   created_by: string | null;
 
+  photo_url: string | null;
   created_at: string;
 }
 
@@ -98,6 +99,7 @@ export interface GardenBed {
   grid_y: number | null;
   is_active: boolean;
   notes: string | null;
+  photo_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -121,10 +123,25 @@ export interface BedPlanting {
   growing_year: number;
   plant_family: string | null;
   notes: string | null;
+  photo_url: string | null;
+  current_health: "thriving" | "healthy" | "ok" | "struggling" | "critical" | "dormant" | null;
   created_at: string;
   updated_at: string;
   // Joined
   plant?: Plant;
+}
+
+export type HealthStatus = "thriving" | "healthy" | "ok" | "struggling" | "critical" | "dormant";
+
+export interface PlantingHealthLog {
+  id: string;
+  planting_id: string;
+  user_id: string;
+  logged_at: string;
+  health_status: HealthStatus;
+  notes: string | null;
+  photo_url: string | null;
+  created_at: string;
 }
 
 export interface MonthlyJob {

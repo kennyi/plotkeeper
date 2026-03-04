@@ -82,6 +82,7 @@ export async function createPlantAction(formData: FormData): Promise<void> {
 
     notes: get("notes") || null,
     growing_tips: get("growing_tips") || null,
+    photo_url: get("photo_url") || null,
   };
 
   const plant = await createPlant(values);

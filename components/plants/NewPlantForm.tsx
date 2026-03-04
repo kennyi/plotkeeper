@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { PhotoUpload } from "@/components/ui/PhotoUpload";
 import { createPlantAction } from "@/app/actions/plants";
 import type { Plant } from "@/types";
 
@@ -205,6 +206,13 @@ export function NewPlantForm() {
               className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
             />
           </Field>
+
+          <PhotoUpload
+            name="photo_url"
+            defaultValue={v.photo_url ?? null}
+            folder="plants"
+            label="Photo (optional)"
+          />
         </section>
 
         {/* Sowing & timing */}

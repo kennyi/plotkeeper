@@ -84,10 +84,16 @@ export async function POST(request: Request) {
     });
 
     if (!res.ok) {
-      const err = await res.text();
-      console.error("OpenAI error:", err);
+      let errMsg = "AI service unavailable";
+      try {
+        const errBody = await res.json();
+        errMsg = errBody?.error?.message ?? errBody?.error ?? errMsg;
+      } catch {
+        errMsg = await res.text().catch(() => errMsg);
+      }
+      console.error("OpenAI error:", res.status, errMsg);
       return NextResponse.json(
-        { error: "AI service unavailable" },
+        { error: `OpenAI error (${res.status}): ${errMsg}` },
         { status: 502 }
       );
     }

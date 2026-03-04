@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PhotoUpload } from "@/components/ui/PhotoUpload";
 import type { GardenBed } from "@/types";
 
 interface BedFormProps {
@@ -186,6 +187,14 @@ export function BedForm({ defaultValues, action, submitLabel }: BedFormProps) {
           className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
         />
       </Field>
+
+      {/* Photo */}
+      <PhotoUpload
+        name="photo_url"
+        defaultValue={defaultValues?.photo_url}
+        folder="beds"
+        label="Bed photo (optional)"
+      />
 
       {/* Actions */}
       <div className="flex gap-3 pt-2">

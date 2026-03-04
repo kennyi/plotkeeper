@@ -2,12 +2,12 @@ import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { BedCard } from "@/components/beds/BedCard";
 import { Button } from "@/components/ui/button";
-import { getBeds } from "@/lib/supabase";
+import { getBedsWithPlantingCount } from "@/lib/supabase";
 
 async function BedList() {
   let beds;
   try {
-    beds = await getBeds();
+    beds = await getBedsWithPlantingCount();
   } catch {
     return (
       <div className="text-center py-16 text-muted-foreground">
@@ -36,7 +36,7 @@ async function BedList() {
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {beds.map((bed) => (
-          <BedCard key={bed.id} bed={bed} />
+          <BedCard key={bed.id} bed={bed} activePlantingCount={bed.active_planting_count} />
         ))}
       </div>
     </>
