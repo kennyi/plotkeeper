@@ -169,6 +169,41 @@ export async function getMonthlyJobs(month: number) {
   return data as MonthlyJob[];
 }
 
+export async function toggleJobDone(id: string, isDone: boolean, year: number) {
+  const { error } = await supabase
+    .from("monthly_jobs")
+    .update({
+      is_done: isDone,
+      done_year: isDone ? year : null,
+    })
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
+export async function createCustomJob(
+  values: Pick<MonthlyJob, "month" | "title" | "category" | "priority" | "notes">
+) {
+  const { data, error } = await supabase
+    .from("monthly_jobs")
+    .insert({ ...values, is_done: false, is_custom: true })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as MonthlyJob;
+}
+
+export async function deleteCustomJob(id: string) {
+  const { error } = await supabase
+    .from("monthly_jobs")
+    .delete()
+    .eq("id", id)
+    .eq("is_custom", true); // safety: only delete custom jobs
+
+  if (error) throw error;
+}
+
 // ── Garden Settings ───────────────────────────────────────────────────────────
 
 export async function getSettings(): Promise<Record<string, string>> {
