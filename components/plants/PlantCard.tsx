@@ -34,6 +34,11 @@ export function PlantCard({ plant }: PlantCardProps) {
               )}
             </div>
             <div className="flex flex-col gap-1 flex-shrink-0">
+              {plant.is_user_created && (
+                <Badge variant="outline" className="text-xs px-1.5 py-0 text-garden-700 border-garden-300 bg-garden-50">
+                  My plant
+                </Badge>
+              )}
               {plant.slug_risk === "high" && (
                 <Badge variant="destructive" className="text-xs px-1.5 py-0">
                   🐌 High slug risk

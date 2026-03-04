@@ -57,6 +57,20 @@ export async function getPlant(id: string) {
   return data as Plant;
 }
 
+export async function createPlant(
+  values: Omit<Plant, "id" | "is_user_created" | "created_by" | "created_at">
+): Promise<Plant> {
+  const supabase = createClient();
+  const user_id = await getUserId();
+  const { data, error } = await supabase
+    .from("plants")
+    .insert({ ...values, is_user_created: true, created_by: user_id })
+    .select()
+    .single();
+  if (error) throw error;
+  return data as Plant;
+}
+
 export async function getPlantsForMonth(month: number) {
   const supabase = createClient();
   const { data, error } = await supabase

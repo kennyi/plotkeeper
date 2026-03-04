@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { Suspense } from "react";
 import { Header } from "@/components/layout/Header";
+import { Button } from "@/components/ui/button";
 import { PlantSearch } from "@/components/plants/PlantSearch";
 import { PlantCard } from "@/components/plants/PlantCard";
 import { getPlants } from "@/lib/supabase";
@@ -64,6 +66,11 @@ export default function PlantLibraryPage({ searchParams }: PlantLibraryPageProps
       <Header
         title="Plant Library"
         description="Ireland-calibrated growing data for vegetables, flowers, and herbs"
+        action={
+          <Button asChild size="sm">
+            <Link href="/plants/new">+ Add plant</Link>
+          </Button>
+        }
       />
 
       <div className="mb-6">

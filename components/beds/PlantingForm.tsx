@@ -98,6 +98,13 @@ export function PlantingForm({ bedId, plants, action }: PlantingFormProps) {
             />
           </Field>
         )}
+
+        <p className="text-xs text-muted-foreground">
+          Can&apos;t find your plant?{" "}
+          <a href="/plants/new" className="underline hover:text-foreground">
+            Add it to the library →
+          </a>
+        </p>
       </div>
 
       {/* Row & quantity */}
