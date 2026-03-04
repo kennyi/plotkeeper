@@ -79,6 +79,7 @@ export interface Plant {
 
 export interface GardenBed {
   id: string;
+  user_id: string;
   name: string;
   bed_type: "raised_bed" | "ground_bed" | "pot" | "planter" | "greenhouse_bed" | "window_box" | "grow_bag";
   length_m: number | null;
@@ -124,6 +125,7 @@ export interface BedPlanting {
 
 export interface MonthlyJob {
   id: string;
+  user_id: string;
   month: number;
   title: string;
   description: string | null;
@@ -139,6 +141,7 @@ export interface MonthlyJob {
 
 export interface GardenSetting {
   id: string;
+  user_id: string;
   setting_key: string;
   setting_value: string | null;
   updated_at: string;
@@ -146,6 +149,7 @@ export interface GardenSetting {
 
 export interface JournalEntry {
   id: string;
+  user_id: string;
   entry_date: string;
   entry_type: "harvest" | "observation" | "problem" | "note" | "weather" | "purchase" | null;
   bed_id: string | null;
@@ -162,6 +166,7 @@ export interface JournalEntry {
 
 export interface AppFeedback {
   id: string;
+  user_id: string;
   feedback_type: "bug" | "suggestion" | "question" | "observation" | null;
   page_context: string | null;
   message: string;
