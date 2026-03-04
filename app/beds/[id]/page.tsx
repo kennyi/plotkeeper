@@ -5,7 +5,101 @@ import { Button } from "@/components/ui/button";
 import { getBed, getBedPlantings } from "@/lib/supabase";
 import { deleteBedAction } from "@/app/actions/beds";
 import { PlantingCard } from "@/components/beds/PlantingCard";
-import type { GardenBed } from "@/types";
+import type { GardenBed, BedPlanting } from "@/types";
+
+// #24 — Spacing calculator
+function SpacingCalculator({ bed, plantings }: { bed: GardenBed; plantings: BedPlanting[] }) {
+  if (!bed.width_m) return null;
+
+  const rows = plantings
+    .filter((p) => p.plant?.spacing_cm)
+    .map((p) => {
+      const spacingCm = p.plant!.spacing_cm!;
+      const perRow = Math.floor((bed.width_m! * 100) / spacingCm);
+      const rowSpacingCm = p.plant!.row_spacing_cm ?? spacingCm;
+      const rowCount = bed.length_m ? Math.floor((bed.length_m * 100) / rowSpacingCm) : null;
+      const total = rowCount ? perRow * rowCount : null;
+      return { planting: p, spacingCm, perRow, total };
+    });
+
+  if (rows.length === 0) return null;
+
+  return (
+    <div className="border-t pt-6 mt-6">
+      <h2 className="text-lg font-semibold mb-1">Spacing guide</h2>
+      <p className="text-xs text-muted-foreground mb-4">
+        Based on bed {bed.width_m}m wide{bed.length_m ? ` × ${bed.length_m}m long` : ""}
+      </p>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-xs text-muted-foreground border-b">
+              <th className="text-left pb-2 font-medium">Plant</th>
+              <th className="text-right pb-2 font-medium">Spacing</th>
+              <th className="text-right pb-2 font-medium">Per row</th>
+              {rows.some((r) => r.total !== null) && (
+                <th className="text-right pb-2 font-medium">Total capacity</th>
+              )}
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {rows.map(({ planting, spacingCm, perRow, total }) => (
+              <tr key={planting.id}>
+                <td className="py-2">{planting.plant?.name ?? planting.custom_plant_name}</td>
+                <td className="py-2 text-right text-muted-foreground">{spacingCm}cm</td>
+                <td className="py-2 text-right font-medium">{perRow}</td>
+                {rows.some((r) => r.total !== null) && (
+                  <td className="py-2 text-right text-muted-foreground">{total ?? "—"}</td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// #25 — Crop history grouped by year
+function CropHistory({ plantings }: { plantings: BedPlanting[] }) {
+  if (plantings.length === 0) return null;
+
+  const byYear = new Map<number, BedPlanting[]>();
+  for (const p of plantings) {
+    const y = p.growing_year ?? new Date(p.created_at).getFullYear();
+    if (!byYear.has(y)) byYear.set(y, []);
+    byYear.get(y)!.push(p);
+  }
+  const years = Array.from(byYear.keys()).sort((a, b) => b - a);
+
+  return (
+    <div className="border-t pt-6 mt-6">
+      <h2 className="text-lg font-semibold mb-4">Crop history</h2>
+      <div className="space-y-6">
+        {years.map((year) => (
+          <div key={year}>
+            <h3 className="text-sm font-semibold text-muted-foreground mb-3">{year}</h3>
+            <div>
+              {byYear.get(year)!.map((p) => (
+                <div key={p.id} className="flex items-center gap-3 text-sm py-2 border-b last:border-b-0">
+                  <span className="flex-1 text-muted-foreground">
+                    {p.plant?.name ?? p.custom_plant_name ?? "Unknown"}
+                    {p.row_label && <span className="ml-1.5 text-xs">· {p.row_label}</span>}
+                  </span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    p.status === "failed" ? "bg-red-100 text-red-600" : "bg-green-100 text-green-700"
+                  }`}>
+                    {p.status === "failed" ? "Failed" : "Harvested"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 const BED_TYPE_LABELS: Record<GardenBed["bed_type"], string> = {
   raised_bed: "Raised Bed",
@@ -51,6 +145,7 @@ export default async function BedDetailPage({ params }: BedDetailPageProps) {
   );
 
   const deleteBed = deleteBedAction.bind(null, params.id);
+
 
   return (
     <div>
@@ -161,17 +256,11 @@ export default async function BedDetailPage({ params }: BedDetailPageProps) {
         )}
       </div>
 
-      {/* History */}
-      {pastPlantings.length > 0 && (
-        <div className="border-t pt-6 mt-6">
-          <h2 className="text-lg font-semibold mb-4">History</h2>
-          <div className="space-y-3">
-            {pastPlantings.map((p) => (
-              <PlantingCard key={p.id} planting={p} bedId={params.id} />
-            ))}
-          </div>
-        </div>
-      )}
+      {/* #24 Spacing calculator */}
+      <SpacingCalculator bed={bed} plantings={activePlantings} />
+
+      {/* #25 Crop history grouped by year */}
+      <CropHistory plantings={pastPlantings} />
     </div>
   );
 }
