@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createBed, updateBed, deleteBed } from "@/lib/supabase";
 import type { GardenBed } from "@/types";
 
-type BedFormValues = Omit<GardenBed, "id" | "created_at" | "updated_at">;
+type BedFormValues = Omit<GardenBed, "id" | "user_id" | "created_at" | "updated_at">;
 
 function parseBedForm(formData: FormData): BedFormValues {
   const raw = (key: string) => formData.get(key) as string | null;

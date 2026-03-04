@@ -9,6 +9,17 @@ import type {
   AppFeedback,
 } from "@/types";
 
+// ── Auth helper ──────────────────────────────────────────────────────────────
+
+async function getUserId(): Promise<string> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+  return user.id;
+}
+
 // ── Plants ───────────────────────────────────────────────────────────────────
 
 export async function getPlants(options?: {
@@ -90,12 +101,13 @@ export async function getBed(id: string) {
 }
 
 export async function createBed(
-  values: Omit<GardenBed, "id" | "created_at" | "updated_at">
+  values: Omit<GardenBed, "id" | "user_id" | "created_at" | "updated_at">
 ) {
   const supabase = createClient();
+  const user_id = await getUserId();
   const { data, error } = await supabase
     .from("garden_beds")
-    .insert(values)
+    .insert({ ...values, user_id })
     .select()
     .single();
 
@@ -215,9 +227,10 @@ export async function createCustomJob(
   values: Pick<MonthlyJob, "month" | "title" | "category" | "priority" | "notes">
 ) {
   const supabase = createClient();
+  const user_id = await getUserId();
   const { data, error } = await supabase
     .from("monthly_jobs")
-    .insert({ ...values, is_done: false, is_custom: true })
+    .insert({ ...values, user_id, is_done: false, is_custom: true })
     .select()
     .single();
 
@@ -254,12 +267,13 @@ export async function getJournalEntries(limit = 50) {
 }
 
 export async function createJournalEntry(
-  values: Omit<JournalEntry, "id" | "created_at">
+  values: Omit<JournalEntry, "id" | "user_id" | "created_at">
 ) {
   const supabase = createClient();
+  const user_id = await getUserId();
   const { data, error } = await supabase
     .from("journal_entries")
-    .insert(values)
+    .insert({ ...values, user_id })
     .select()
     .single();
 
@@ -319,7 +333,9 @@ export async function getSettings(): Promise<Record<string, string>> {
 
 export async function upsertSettings(settings: Record<string, string>) {
   const supabase = createClient();
+  const user_id = await getUserId();
   const rows = Object.entries(settings).map(([setting_key, setting_value]) => ({
+    user_id,
     setting_key,
     setting_value,
     updated_at: new Date().toISOString(),
@@ -327,7 +343,7 @@ export async function upsertSettings(settings: Record<string, string>) {
 
   const { error } = await supabase
     .from("garden_settings")
-    .upsert(rows, { onConflict: "setting_key" });
+    .upsert(rows, { onConflict: "user_id,setting_key" });
 
   if (error) throw error;
 }
@@ -338,7 +354,8 @@ export async function createFeedback(
   values: Pick<AppFeedback, "feedback_type" | "page_context" | "message">
 ) {
   const supabase = createClient();
-  const { error } = await supabase.from("app_feedback").insert(values);
+  const user_id = await getUserId();
+  const { error } = await supabase.from("app_feedback").insert({ ...values, user_id });
 
   if (error) throw error;
 }
