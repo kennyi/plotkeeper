@@ -1,18 +1,22 @@
-import { createClient } from "@supabase/supabase-js";
-import type { Plant, GardenBed, BedPlanting, MonthlyJob, GardenSetting, JournalEntry, AppFeedback } from "@/types";
+import { createClient } from "@/lib/supabase/server";
+import type {
+  Plant,
+  GardenBed,
+  BedPlanting,
+  MonthlyJob,
+  GardenSetting,
+  JournalEntry,
+  AppFeedback,
+} from "@/types";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://placeholder.supabase.co";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "placeholder-key";
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-// ── Plants ──────────────────────────────────────────────────────────────────
+// ── Plants ───────────────────────────────────────────────────────────────────
 
 export async function getPlants(options?: {
   category?: string;
   search?: string;
   isCutFlower?: boolean;
 }) {
+  const supabase = createClient();
   let query = supabase.from("plants").select("*").order("name");
 
   if (options?.category) {
@@ -31,6 +35,7 @@ export async function getPlants(options?: {
 }
 
 export async function getPlant(id: string) {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("plants")
     .select("*")
@@ -42,15 +47,15 @@ export async function getPlant(id: string) {
 }
 
 export async function getPlantsForMonth(month: number) {
-  // Returns plants active in this month across sow/transplant/harvest windows
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("plants")
     .select("*")
     .or(
       `and(sow_indoors_start.lte.${month},sow_indoors_end.gte.${month}),` +
-      `and(sow_outdoors_start.lte.${month},sow_outdoors_end.gte.${month}),` +
-      `and(transplant_start.lte.${month},transplant_end.gte.${month}),` +
-      `and(harvest_start.lte.${month},harvest_end.gte.${month})`
+        `and(sow_outdoors_start.lte.${month},sow_outdoors_end.gte.${month}),` +
+        `and(transplant_start.lte.${month},transplant_end.gte.${month}),` +
+        `and(harvest_start.lte.${month},harvest_end.gte.${month})`
     )
     .order("name");
 
@@ -58,9 +63,10 @@ export async function getPlantsForMonth(month: number) {
   return data as Plant[];
 }
 
-// ── Garden Beds ─────────────────────────────────────────────────────────────
+// ── Garden Beds ──────────────────────────────────────────────────────────────
 
 export async function getBeds() {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("garden_beds")
     .select("*")
@@ -72,6 +78,7 @@ export async function getBeds() {
 }
 
 export async function getBed(id: string) {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("garden_beds")
     .select("*")
@@ -82,7 +89,10 @@ export async function getBed(id: string) {
   return data as GardenBed;
 }
 
-export async function createBed(values: Omit<GardenBed, "id" | "created_at" | "updated_at">) {
+export async function createBed(
+  values: Omit<GardenBed, "id" | "created_at" | "updated_at">
+) {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("garden_beds")
     .insert(values)
@@ -93,7 +103,11 @@ export async function createBed(values: Omit<GardenBed, "id" | "created_at" | "u
   return data as GardenBed;
 }
 
-export async function updateBed(id: string, values: Partial<Omit<GardenBed, "id" | "created_at" | "updated_at">>) {
+export async function updateBed(
+  id: string,
+  values: Partial<Omit<GardenBed, "id" | "created_at" | "updated_at">>
+) {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("garden_beds")
     .update({ ...values, updated_at: new Date().toISOString() })
@@ -106,6 +120,7 @@ export async function updateBed(id: string, values: Partial<Omit<GardenBed, "id"
 }
 
 export async function deleteBed(id: string) {
+  const supabase = createClient();
   const { error } = await supabase
     .from("garden_beds")
     .update({ is_active: false, updated_at: new Date().toISOString() })
@@ -117,6 +132,7 @@ export async function deleteBed(id: string) {
 // ── Bed Plantings ────────────────────────────────────────────────────────────
 
 export async function getBedPlantings(bedId: string) {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("bed_plantings")
     .select("*, plant:plants(*)")
@@ -127,7 +143,10 @@ export async function getBedPlantings(bedId: string) {
   return data as BedPlanting[];
 }
 
-export async function createPlanting(values: Omit<BedPlanting, "id" | "created_at" | "updated_at" | "plant">) {
+export async function createPlanting(
+  values: Omit<BedPlanting, "id" | "created_at" | "updated_at" | "plant">
+) {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("bed_plantings")
     .insert(values)
@@ -138,7 +157,11 @@ export async function createPlanting(values: Omit<BedPlanting, "id" | "created_a
   return data as BedPlanting;
 }
 
-export async function updatePlantingStatus(id: string, status: BedPlanting["status"]) {
+export async function updatePlantingStatus(
+  id: string,
+  status: BedPlanting["status"]
+) {
+  const supabase = createClient();
   const { error } = await supabase
     .from("bed_plantings")
     .update({ status, updated_at: new Date().toISOString() })
@@ -148,6 +171,7 @@ export async function updatePlantingStatus(id: string, status: BedPlanting["stat
 }
 
 export async function deletePlanting(id: string) {
+  const supabase = createClient();
   const { error } = await supabase
     .from("bed_plantings")
     .delete()
@@ -159,6 +183,7 @@ export async function deletePlanting(id: string) {
 // ── Monthly Jobs ─────────────────────────────────────────────────────────────
 
 export async function getMonthlyJobs(month: number) {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("monthly_jobs")
     .select("*")
@@ -169,7 +194,12 @@ export async function getMonthlyJobs(month: number) {
   return data as MonthlyJob[];
 }
 
-export async function toggleJobDone(id: string, isDone: boolean, year: number) {
+export async function toggleJobDone(
+  id: string,
+  isDone: boolean,
+  year: number
+) {
+  const supabase = createClient();
   const { error } = await supabase
     .from("monthly_jobs")
     .update({
@@ -184,6 +214,7 @@ export async function toggleJobDone(id: string, isDone: boolean, year: number) {
 export async function createCustomJob(
   values: Pick<MonthlyJob, "month" | "title" | "category" | "priority" | "notes">
 ) {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("monthly_jobs")
     .insert({ ...values, is_done: false, is_custom: true })
@@ -195,6 +226,7 @@ export async function createCustomJob(
 }
 
 export async function deleteCustomJob(id: string) {
+  const supabase = createClient();
   const { error } = await supabase
     .from("monthly_jobs")
     .delete()
@@ -207,6 +239,7 @@ export async function deleteCustomJob(id: string) {
 // ── Journal ──────────────────────────────────────────────────────────────────
 
 export async function getJournalEntries(limit = 50) {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("journal_entries")
     .select("*, bed:garden_beds(id, name), plant:plants(id, name)")
@@ -214,12 +247,16 @@ export async function getJournalEntries(limit = 50) {
     .limit(limit);
 
   if (error) throw error;
-  return data as (JournalEntry & { bed?: { id: string; name: string } | null; plant?: { id: string; name: string } | null })[];
+  return data as (JournalEntry & {
+    bed?: { id: string; name: string } | null;
+    plant?: { id: string; name: string } | null;
+  })[];
 }
 
 export async function createJournalEntry(
   values: Omit<JournalEntry, "id" | "created_at">
 ) {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("journal_entries")
     .insert(values)
@@ -231,6 +268,7 @@ export async function createJournalEntry(
 }
 
 export async function deleteJournalEntry(id: string) {
+  const supabase = createClient();
   const { error } = await supabase
     .from("journal_entries")
     .delete()
@@ -242,9 +280,16 @@ export async function deleteJournalEntry(id: string) {
 // ── Dashboard counts ─────────────────────────────────────────────────────────
 
 export async function getDashboardCounts() {
+  const supabase = createClient();
   const [beds, plantings, journalEntries] = await Promise.all([
-    supabase.from("garden_beds").select("id", { count: "exact" }).eq("is_active", true),
-    supabase.from("bed_plantings").select("id, status", { count: "exact" }).not("status", "in", '("finished","failed")'),
+    supabase
+      .from("garden_beds")
+      .select("id", { count: "exact" })
+      .eq("is_active", true),
+    supabase
+      .from("bed_plantings")
+      .select("id, status", { count: "exact" })
+      .not("status", "in", '("finished","failed")'),
     supabase.from("journal_entries").select("id", { count: "exact" }),
   ]);
 
@@ -258,6 +303,7 @@ export async function getDashboardCounts() {
 // ── Garden Settings ───────────────────────────────────────────────────────────
 
 export async function getSettings(): Promise<Record<string, string>> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("garden_settings")
     .select("setting_key, setting_value");
@@ -265,14 +311,14 @@ export async function getSettings(): Promise<Record<string, string>> {
   if (error) throw error;
 
   return Object.fromEntries(
-    (data as Pick<GardenSetting, "setting_key" | "setting_value">[]).map((s) => [
-      s.setting_key,
-      s.setting_value ?? "",
-    ])
+    (
+      data as Pick<GardenSetting, "setting_key" | "setting_value">[]
+    ).map((s) => [s.setting_key, s.setting_value ?? ""])
   );
 }
 
 export async function upsertSettings(settings: Record<string, string>) {
+  const supabase = createClient();
   const rows = Object.entries(settings).map(([setting_key, setting_value]) => ({
     setting_key,
     setting_value,
@@ -291,9 +337,8 @@ export async function upsertSettings(settings: Record<string, string>) {
 export async function createFeedback(
   values: Pick<AppFeedback, "feedback_type" | "page_context" | "message">
 ) {
-  const { error } = await supabase
-    .from("app_feedback")
-    .insert(values);
+  const supabase = createClient();
+  const { error } = await supabase.from("app_feedback").insert(values);
 
   if (error) throw error;
 }
