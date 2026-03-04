@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import type { Plant, GardenBed, BedPlanting, MonthlyJob, GardenSetting, JournalEntry } from "@/types";
+import type { Plant, GardenBed, BedPlanting, MonthlyJob, GardenSetting, JournalEntry, AppFeedback } from "@/types";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://placeholder.supabase.co";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "placeholder-key";
@@ -282,6 +282,18 @@ export async function upsertSettings(settings: Record<string, string>) {
   const { error } = await supabase
     .from("garden_settings")
     .upsert(rows, { onConflict: "setting_key" });
+
+  if (error) throw error;
+}
+
+// ── App Feedback ──────────────────────────────────────────────────────────────
+
+export async function createFeedback(
+  values: Pick<AppFeedback, "feedback_type" | "page_context" | "message">
+) {
+  const { error } = await supabase
+    .from("app_feedback")
+    .insert(values);
 
   if (error) throw error;
 }

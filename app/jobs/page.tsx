@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { getMonthlyJobs } from "@/lib/supabase";
 import { JobItem } from "@/components/jobs/JobItem";
 import { AddJobForm } from "@/components/jobs/AddJobForm";
-import { MONTH_NAMES } from "@/types";
+import { MONTH_NAMES } from "@/lib/constants";
 import type { MonthlyJob } from "@/types";
 
 const PRIORITY_ORDER: Record<MonthlyJob["priority"], number> = {
