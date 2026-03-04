@@ -271,3 +271,17 @@ export async function getSettings(): Promise<Record<string, string>> {
     ])
   );
 }
+
+export async function upsertSettings(settings: Record<string, string>) {
+  const rows = Object.entries(settings).map(([setting_key, setting_value]) => ({
+    setting_key,
+    setting_value,
+    updated_at: new Date().toISOString(),
+  }));
+
+  const { error } = await supabase
+    .from("garden_settings")
+    .upsert(rows, { onConflict: "setting_key" });
+
+  if (error) throw error;
+}
