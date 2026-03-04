@@ -68,10 +68,27 @@ export default async function SettingsPage() {
           />
           <Field
             label="Location"
-            name="location"
-            value={s("location")}
+            name="location_name"
+            value={s("location_name") || s("location")}
             placeholder="e.g. Kildare, Ireland"
           />
+          <div className="grid grid-cols-2 gap-3">
+            <Field
+              label="Latitude"
+              name="latitude"
+              value={s("latitude")}
+              placeholder="e.g. 53.1588"
+              hint="Used for live weather"
+              type="number"
+            />
+            <Field
+              label="Longitude"
+              name="longitude"
+              value={s("longitude")}
+              placeholder="e.g. -6.9087"
+              type="number"
+            />
+          </div>
         </section>
 
         {/* Frost & climate */}

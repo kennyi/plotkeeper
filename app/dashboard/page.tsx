@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MONTH_NAMES } from "@/lib/constants";
+import { MONTH_NAMES, KILDARE } from "@/lib/constants";
 import { getDashboardCounts, getMonthlyJobs, getSettings } from "@/lib/supabase";
 import { getWeatherForecast } from "@/lib/weather";
 import { WeatherAlerts } from "@/components/dashboard/WeatherAlerts";
@@ -11,15 +11,19 @@ export default async function DashboardPage() {
   const monthName = MONTH_NAMES[month - 1];
   const year = new Date().getFullYear();
 
-  const [counts, jobs, settings, weather] = await Promise.all([
+  const [counts, jobs, settings] = await Promise.all([
     getDashboardCounts().catch(() => ({ bedCount: 0, activePlantingCount: 0, journalCount: 0 })),
     getMonthlyJobs(month).catch(() => []),
     getSettings().catch(() => ({} as Record<string, string>)),
-    getWeatherForecast().catch(() => null),
   ]);
 
-  const ownerName = settings.owner_name || "gardener";
-  const location = settings.location || "Kildare";
+  const ownerName = settings.owner_name || null;
+  const locationName = settings.location_name || settings.location || "Kildare";
+  const lat = settings.latitude ? parseFloat(settings.latitude) : KILDARE.latitude;
+  const lng = settings.longitude ? parseFloat(settings.longitude) : KILDARE.longitude;
+  const profileIncomplete = !settings.owner_name || !settings.latitude;
+
+  const weather = await getWeatherForecast(lat, lng).catch(() => null);
 
   const jobsDoneThisMonth = jobs.filter((j) => j.is_done && j.done_year === year).length;
   const jobsRemaining = jobs.length - jobsDoneThisMonth;
@@ -28,9 +32,19 @@ export default async function DashboardPage() {
   return (
     <div>
       <Header
-        title={`Good day, ${ownerName}`}
-        description={`${monthName} in ${location} — here's what's happening in your garden`}
+        title={ownerName ? `Good day, ${ownerName}` : "Good day"}
+        description={`${monthName} in ${locationName} — here's what's happening in your garden`}
       />
+
+      {/* Setup prompt for new users */}
+      {profileIncomplete && (
+        <div className="mb-6 flex items-center justify-between gap-4 rounded-lg border border-garden-200 bg-garden-50 px-4 py-3 text-sm text-garden-800">
+          <p>Set your name and location in Settings to personalise your dashboard and weather.</p>
+          <Link href="/settings" className="shrink-0 font-medium underline underline-offset-2 hover:text-garden-900">
+            Go to Settings →
+          </Link>
+        </div>
+      )}
 
       {/* Weather alerts */}
       {weather && weather.alerts.length > 0 && (
@@ -133,13 +147,13 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* Kildare conditions */}
+      {/* Local conditions */}
       <div className="p-4 rounded-lg bg-garden-50 border border-garden-200">
-        <p className="text-garden-800 font-medium text-sm mb-2">Kildare conditions</p>
+        <p className="text-garden-800 font-medium text-sm mb-2">{locationName} conditions</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm text-garden-700">
-          <p>Last frost: ~April 20</p>
-          <p>First frost: ~October 30</p>
-          <p>Zone: H4–H5 (RHS)</p>
+          <p>Last frost: ~{settings.last_frost_date || "April 20"}</p>
+          <p>First frost: ~{settings.first_frost_date || "October 30"}</p>
+          <p>Zone: {settings.hardiness_zone || "H4–H5"} (RHS)</p>
         </div>
       </div>
     </div>
