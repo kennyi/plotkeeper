@@ -3,16 +3,19 @@ import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MONTH_NAMES } from "@/lib/constants";
 import { getDashboardCounts, getMonthlyJobs, getSettings } from "@/lib/supabase";
+import { getWeatherForecast } from "@/lib/weather";
+import { WeatherAlerts } from "@/components/dashboard/WeatherAlerts";
 
 export default async function DashboardPage() {
   const month = new Date().getMonth() + 1;
   const monthName = MONTH_NAMES[month - 1];
   const year = new Date().getFullYear();
 
-  const [counts, jobs, settings] = await Promise.all([
+  const [counts, jobs, settings, weather] = await Promise.all([
     getDashboardCounts().catch(() => ({ bedCount: 0, activePlantingCount: 0, journalCount: 0 })),
     getMonthlyJobs(month).catch(() => []),
     getSettings().catch(() => ({} as Record<string, string>)),
+    getWeatherForecast().catch(() => null),
   ]);
 
   const ownerName = settings.owner_name || "gardener";
@@ -28,6 +31,11 @@ export default async function DashboardPage() {
         title={`Good day, ${ownerName}`}
         description={`${monthName} in ${location} — here's what's happening in your garden`}
       />
+
+      {/* Weather alerts */}
+      {weather && weather.alerts.length > 0 && (
+        <WeatherAlerts alerts={weather.alerts} />
+      )}
 
       {/* Stat cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -99,6 +107,28 @@ export default async function DashboardPage() {
                 {job.category && (
                   <span className="text-xs text-muted-foreground hidden sm:block">{job.category.replace(/_/g, " ")}</span>
                 )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 3-day forecast strip */}
+      {weather && (
+        <div className="mb-8">
+          <h2 className="text-base font-semibold mb-3">3-day forecast</h2>
+          <div className="grid grid-cols-3 gap-3">
+            {weather.days.slice(0, 3).map((day) => (
+              <div key={day.date} className="border rounded-lg p-3 text-center">
+                <p className="text-xs text-muted-foreground">
+                  {new Date(day.date).toLocaleDateString("en-IE", { weekday: "short", day: "numeric", month: "short" })}
+                </p>
+                <p className="text-sm font-medium mt-1">
+                  {Math.round(day.tempMax)}° / {Math.round(day.tempMin)}°
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {day.precipitation > 0 ? `${day.precipitation.toFixed(1)}mm` : "Dry"}
+                </p>
               </div>
             ))}
           </div>
