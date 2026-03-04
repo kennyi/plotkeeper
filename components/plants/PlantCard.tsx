@@ -19,12 +19,20 @@ export function PlantCard({ plant }: PlantCardProps) {
 
   return (
     <Link href={`/plants/${plant.id}`}>
-      <Card className="h-full hover:shadow-md transition-shadow cursor-pointer hover:border-garden-300">
+      <Card className="h-full hover:shadow-md transition-shadow cursor-pointer hover:border-garden-300 overflow-hidden">
+        {plant.photo_url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={plant.photo_url}
+            alt={plant.name}
+            className="w-full h-32 object-cover"
+          />
+        )}
         <CardContent className="p-4">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="text-base">{categoryEmoji(plant.category)}</span>
+                {!plant.photo_url && <span className="text-base">{categoryEmoji(plant.category)}</span>}
                 <h3 className="font-semibold text-sm truncate">{plant.name}</h3>
               </div>
               {plant.latin_name && (

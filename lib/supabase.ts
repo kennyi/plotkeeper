@@ -7,6 +7,8 @@ import type {
   GardenSetting,
   JournalEntry,
   AppFeedback,
+  PlantingHealthLog,
+  HealthStatus,
 } from "@/types";
 
 // ── Auth helper ──────────────────────────────────────────────────────────────
@@ -71,9 +73,9 @@ export async function createPlant(
   return data as Plant;
 }
 
-export async function getPlantsForMonth(month: number) {
+export async function getPlantsForMonth(month: number, category?: string) {
   const supabase = createClient();
-  const { data, error } = await supabase
+  let query = supabase
     .from("plants")
     .select("*")
     .or(
@@ -84,6 +86,11 @@ export async function getPlantsForMonth(month: number) {
     )
     .order("name");
 
+  if (category) {
+    query = query.eq("category", category);
+  }
+
+  const { data, error } = await query;
   if (error) throw error;
   return data as Plant[];
 }
@@ -100,6 +107,46 @@ export async function getBeds() {
 
   if (error) throw error;
   return data as GardenBed[];
+}
+
+/** Returns active beds with a count of their active plantings, for the dashboard snapshot. */
+export async function getBedsWithPlantingCount(): Promise<(GardenBed & { active_planting_count: number })[]> {
+  const supabase = createClient();
+  const { data: beds, error: bedError } = await supabase
+    .from("garden_beds")
+    .select("*")
+    .eq("is_active", true)
+    .order("name")
+    .limit(6);
+  if (bedError) throw bedError;
+
+  const { data: plantings, error: pError } = await supabase
+    .from("bed_plantings")
+    .select("bed_id, status")
+    .in("status", ["planned", "seeds_started", "germinating", "growing", "ready"]);
+  if (pError) throw pError;
+
+  const countByBed: Record<string, number> = {};
+  for (const p of plantings ?? []) {
+    countByBed[p.bed_id] = (countByBed[p.bed_id] ?? 0) + 1;
+  }
+
+  return (beds as GardenBed[]).map((b) => ({
+    ...b,
+    active_planting_count: countByBed[b.id] ?? 0,
+  }));
+}
+
+/** Returns active plantings (with plant join) for reminder logic. */
+export async function getActivePlantings(): Promise<BedPlanting[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("bed_plantings")
+    .select("*, plant:plants(*)")
+    .in("status", ["seeds_started", "growing", "ready"])
+    .order("created_at");
+  if (error) throw error;
+  return data as BedPlanting[];
 }
 
 export async function getBed(id: string) {
@@ -201,6 +248,16 @@ export async function deletePlanting(id: string) {
   const { error } = await supabase
     .from("bed_plantings")
     .delete()
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
+export async function updatePlantingPhoto(id: string, photoUrl: string) {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("bed_plantings")
+    .update({ photo_url: photoUrl || null, updated_at: new Date().toISOString() })
     .eq("id", id);
 
   if (error) throw error;
@@ -372,4 +429,43 @@ export async function createFeedback(
   const { error } = await supabase.from("app_feedback").insert({ ...values, user_id });
 
   if (error) throw error;
+}
+
+// ── Health Logs ───────────────────────────────────────────────────────────────
+
+export async function logPlantingHealth(values: {
+  planting_id: string;
+  health_status: HealthStatus;
+  notes?: string | null;
+  photo_url?: string | null;
+  logged_at?: string;
+}) {
+  const supabase = createClient();
+  const user_id = await getUserId();
+
+  // Log entry
+  const { error: logError } = await supabase
+    .from("planting_health_logs")
+    .insert({ ...values, user_id });
+  if (logError) throw logError;
+
+  // Update snapshot on the planting row
+  const { error: snapError } = await supabase
+    .from("bed_plantings")
+    .update({ current_health: values.health_status, updated_at: new Date().toISOString() })
+    .eq("id", values.planting_id);
+  if (snapError) throw snapError;
+}
+
+export async function getHealthLogs(plantingId: string): Promise<PlantingHealthLog[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("planting_health_logs")
+    .select("*")
+    .eq("planting_id", plantingId)
+    .order("logged_at", { ascending: false })
+    .limit(20);
+
+  if (error) throw error;
+  return data as PlantingHealthLog[];
 }

@@ -10,6 +10,7 @@ import { ArrowLeft } from "lucide-react";
 
 interface PlantDetailPageProps {
   params: { id: string };
+  searchParams: { from?: string };
 }
 
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
@@ -33,13 +34,18 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-export default async function PlantDetailPage({ params }: PlantDetailPageProps) {
+export default async function PlantDetailPage({ params, searchParams }: PlantDetailPageProps) {
   let plant;
   try {
     plant = await getPlant(params.id);
   } catch {
     notFound();
   }
+
+  // Back link — if coming from a bed, show "Back to [bed]" instead of "Plant Library"
+  const from = searchParams.from;
+  const backHref = from ?? "/plants";
+  const backLabel = from?.startsWith("/beds/") ? "Back to bed" : "Plant Library";
 
   const sunLabel =
     plant.sun_requirement === "full_sun"
@@ -72,16 +78,24 @@ export default async function PlantDetailPage({ params }: PlantDetailPageProps) 
     <div>
       {/* Back link */}
       <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2">
-        <Link href="/plants">
+        <Link href={backHref}>
           <ArrowLeft className="h-4 w-4 mr-1" />
-          Plant Library
+          {backLabel}
         </Link>
       </Button>
 
       {/* Header */}
       <div className="mb-6">
+        {plant.photo_url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={plant.photo_url}
+            alt={plant.name}
+            className="w-full max-h-64 object-cover rounded-lg mb-4"
+          />
+        )}
         <div className="flex items-start gap-3">
-          <span className="text-4xl">{categoryEmoji(plant.category)}</span>
+          {!plant.photo_url && <span className="text-4xl">{categoryEmoji(plant.category)}</span>}
           <div>
             <h1 className="text-2xl font-bold">{plant.name}</h1>
             {plant.latin_name && (

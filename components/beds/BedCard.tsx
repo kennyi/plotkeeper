@@ -27,12 +27,25 @@ function dimensionLabel(bed: GardenBed) {
   return null;
 }
 
-export function BedCard({ bed }: { bed: GardenBed }) {
+interface BedCardProps {
+  bed: GardenBed;
+  activePlantingCount?: number;
+}
+
+export function BedCard({ bed, activePlantingCount }: BedCardProps) {
   const dim = dimensionLabel(bed);
 
   return (
     <Link href={`/beds/${bed.id}`} className="block group">
-      <Card className="h-full transition-shadow group-hover:shadow-md">
+      <Card className="h-full transition-shadow group-hover:shadow-md overflow-hidden">
+        {bed.photo_url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={bed.photo_url}
+            alt={bed.name}
+            className="w-full h-32 object-cover"
+          />
+        )}
         <CardHeader className="pb-2">
           <div className="flex items-start justify-between gap-2">
             <CardTitle className="text-base leading-tight">{bed.name}</CardTitle>
@@ -49,6 +62,11 @@ export function BedCard({ bed }: { bed: GardenBed }) {
             {bed.location_label && <span>{bed.location_label}</span>}
           </div>
           {bed.soil_type && <p className="truncate">{bed.soil_type}</p>}
+          {activePlantingCount !== undefined && (
+            <p className="text-xs font-medium text-garden-700 pt-1">
+              {activePlantingCount} active planting{activePlantingCount !== 1 ? "s" : ""}
+            </p>
+          )}
         </CardContent>
       </Card>
     </Link>
