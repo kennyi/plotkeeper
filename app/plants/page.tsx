@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { Suspense } from "react";
 import { Header } from "@/components/layout/Header";
 import { PlantSearch } from "@/components/plants/PlantSearch";

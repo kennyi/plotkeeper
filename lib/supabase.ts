@@ -1,10 +1,19 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Plant, GardenBed, BedPlanting, MonthlyJob, GardenSetting, JournalEntry } from "@/types";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+function getClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  return createClient(url, key);
+}
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Lazy singleton — not instantiated at module load time
+let _client: ReturnType<typeof createClient> | null = null;
+function supabase() {
+  if (!_client) _client = getClient();
+  return _client;
+}
 
 // ── Plants ──────────────────────────────────────────────────────────────────
 
@@ -13,7 +22,7 @@ export async function getPlants(options?: {
   search?: string;
   isCutFlower?: boolean;
 }) {
-  let query = supabase.from("plants").select("*").order("name");
+  let query = supabase().from("plants").select("*").order("name");
 
   if (options?.category) {
     query = query.eq("category", options.category);
@@ -31,7 +40,7 @@ export async function getPlants(options?: {
 }
 
 export async function getPlant(id: string) {
-  const { data, error } = await supabase
+  const { data, error } = await supabase()
     .from("plants")
     .select("*")
     .eq("id", id)
@@ -43,7 +52,7 @@ export async function getPlant(id: string) {
 
 export async function getPlantsForMonth(month: number) {
   // Returns plants active in this month across sow/transplant/harvest windows
-  const { data, error } = await supabase
+  const { data, error } = await supabase()
     .from("plants")
     .select("*")
     .or(
@@ -61,7 +70,7 @@ export async function getPlantsForMonth(month: number) {
 // ── Garden Beds ─────────────────────────────────────────────────────────────
 
 export async function getBeds() {
-  const { data, error } = await supabase
+  const { data, error } = await supabase()
     .from("garden_beds")
     .select("*")
     .eq("is_active", true)
@@ -72,7 +81,7 @@ export async function getBeds() {
 }
 
 export async function getBed(id: string) {
-  const { data, error } = await supabase
+  const { data, error } = await supabase()
     .from("garden_beds")
     .select("*")
     .eq("id", id)
@@ -85,7 +94,7 @@ export async function getBed(id: string) {
 // ── Bed Plantings ────────────────────────────────────────────────────────────
 
 export async function getBedPlantings(bedId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await supabase()
     .from("bed_plantings")
     .select("*, plant:plants(*)")
     .eq("bed_id", bedId)
@@ -98,7 +107,7 @@ export async function getBedPlantings(bedId: string) {
 // ── Monthly Jobs ─────────────────────────────────────────────────────────────
 
 export async function getMonthlyJobs(month: number) {
-  const { data, error } = await supabase
+  const { data, error } = await supabase()
     .from("monthly_jobs")
     .select("*")
     .eq("month", month)
@@ -111,7 +120,7 @@ export async function getMonthlyJobs(month: number) {
 // ── Garden Settings ───────────────────────────────────────────────────────────
 
 export async function getSettings(): Promise<Record<string, string>> {
-  const { data, error } = await supabase
+  const { data, error } = await supabase()
     .from("garden_settings")
     .select("setting_key, setting_value");
 
