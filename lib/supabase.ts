@@ -82,6 +82,38 @@ export async function getBed(id: string) {
   return data as GardenBed;
 }
 
+export async function createBed(values: Omit<GardenBed, "id" | "created_at" | "updated_at">) {
+  const { data, error } = await supabase
+    .from("garden_beds")
+    .insert(values)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as GardenBed;
+}
+
+export async function updateBed(id: string, values: Partial<Omit<GardenBed, "id" | "created_at" | "updated_at">>) {
+  const { data, error } = await supabase
+    .from("garden_beds")
+    .update({ ...values, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as GardenBed;
+}
+
+export async function deleteBed(id: string) {
+  const { error } = await supabase
+    .from("garden_beds")
+    .update({ is_active: false, updated_at: new Date().toISOString() })
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
 // ── Bed Plantings ────────────────────────────────────────────────────────────
 
 export async function getBedPlantings(bedId: string) {

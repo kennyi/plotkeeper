@@ -5,7 +5,7 @@ export interface Plant {
   id: string;
   name: string;
   latin_name: string | null;
-  category: "vegetable" | "flower" | "herb" | "fruit" | "perennial" | "annual" | "bulb" | "shrub";
+  category: "vegetable" | "flower" | "herb" | "fruit" | "perennial" | "annual" | "bulb" | "shrub" | "biennial";
   subcategory: string | null;
   description: string | null;
 
