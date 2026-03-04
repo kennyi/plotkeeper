@@ -74,6 +74,10 @@ export interface Plant {
   notes: string | null;
   growing_tips: string | null;
 
+  // User-created plant fields
+  is_user_created: boolean;
+  created_by: string | null;
+
   created_at: string;
 }
 
