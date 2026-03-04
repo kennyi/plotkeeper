@@ -127,6 +127,35 @@ export async function getBedPlantings(bedId: string) {
   return data as BedPlanting[];
 }
 
+export async function createPlanting(values: Omit<BedPlanting, "id" | "created_at" | "updated_at" | "plant">) {
+  const { data, error } = await supabase
+    .from("bed_plantings")
+    .insert(values)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as BedPlanting;
+}
+
+export async function updatePlantingStatus(id: string, status: BedPlanting["status"]) {
+  const { error } = await supabase
+    .from("bed_plantings")
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
+export async function deletePlanting(id: string) {
+  const { error } = await supabase
+    .from("bed_plantings")
+    .delete()
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
 // ── Monthly Jobs ─────────────────────────────────────────────────────────────
 
 export async function getMonthlyJobs(month: number) {
