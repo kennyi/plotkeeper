@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS plants (
   latin_name            TEXT,
   category              TEXT NOT NULL CHECK (category IN (
                           'vegetable', 'flower', 'herb', 'fruit',
-                          'perennial', 'annual', 'bulb', 'shrub'
+                          'perennial', 'annual', 'bulb', 'shrub', 'biennial'
                         )),
   subcategory           TEXT,
   description           TEXT,
