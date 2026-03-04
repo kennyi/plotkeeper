@@ -1,62 +1,114 @@
+import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MONTH_NAMES } from "@/lib/constants";
+import { getDashboardCounts, getMonthlyJobs } from "@/lib/supabase";
 
-function currentMonth() {
-  return new Date().getMonth() + 1;
-}
-
-export default function DashboardPage() {
-  const month = currentMonth();
+export default async function DashboardPage() {
+  const month = new Date().getMonth() + 1;
   const monthName = MONTH_NAMES[month - 1];
+  const year = new Date().getFullYear();
+
+  const [counts, jobs] = await Promise.all([
+    getDashboardCounts().catch(() => ({ bedCount: 0, activePlantingCount: 0, journalCount: 0 })),
+    getMonthlyJobs(month).catch(() => []),
+  ]);
+
+  const jobsDoneThisMonth = jobs.filter((j) => j.is_done && j.done_year === year).length;
+  const jobsRemaining = jobs.length - jobsDoneThisMonth;
+  const highPriorityJobs = jobs.filter((j) => j.priority === "high" && !(j.is_done && j.done_year === year));
 
   return (
     <div>
       <Header
-        title={`Good day, Ian`}
+        title="Good day, Ian"
         description={`${monthName} in Kildare — here's what's happening in your garden`}
       />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-medium text-muted-foreground">This month</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{monthName}</p>
-            <p className="text-sm text-muted-foreground">Check the calendar for what to sow</p>
-          </CardContent>
-        </Card>
+      {/* Stat cards */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <Link href="/beds">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Active beds</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{counts.bedCount}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">garden beds tracked</p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-medium text-muted-foreground">Plant library</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">Browse vegetables, flowers, and herbs</p>
-          </CardContent>
-        </Card>
+        <Link href="/beds">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Active plantings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{counts.activePlantingCount}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">plants in the ground</p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-medium text-muted-foreground">Kildare conditions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm">Last frost: ~April 20</p>
-            <p className="text-sm">First frost: ~October 30</p>
-            <p className="text-sm">Zone: H4–H5 (RHS)</p>
-          </CardContent>
-        </Card>
+        <Link href={`/jobs?month=${month}`}>
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">{monthName} jobs</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{jobsRemaining}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                remaining · {jobsDoneThisMonth} done
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/journal">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Journal entries</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{counts.journalCount}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">logs recorded</p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
-      <div className="mt-8 p-4 rounded-lg bg-garden-50 border border-garden-200">
-        <p className="text-garden-800 font-medium text-sm">Getting started</p>
-        <ul className="mt-2 space-y-1 text-sm text-garden-700">
-          <li>1. Set up your Supabase project and add env variables</li>
-          <li>2. Run the database migrations in <code>/supabase/migrations/</code></li>
-          <li>3. Seed the plant database with the seed SQL files</li>
-          <li>4. Browse your plant library and planting calendar</li>
-        </ul>
+      {/* High priority jobs this month */}
+      {highPriorityJobs.length > 0 && (
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold">High priority this month</h2>
+            <Link href={`/jobs?month=${month}`} className="text-sm text-muted-foreground hover:underline">
+              All {monthName} jobs →
+            </Link>
+          </div>
+          <div className="space-y-2">
+            {highPriorityJobs.slice(0, 5).map((job) => (
+              <div key={job.id} className="flex items-center gap-3 p-3 border rounded-lg">
+                <span className="w-2 h-2 rounded-full bg-red-400 shrink-0" />
+                <p className="text-sm flex-1">{job.title}</p>
+                {job.category && (
+                  <span className="text-xs text-muted-foreground hidden sm:block">{job.category.replace(/_/g, " ")}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Kildare conditions */}
+      <div className="p-4 rounded-lg bg-garden-50 border border-garden-200">
+        <p className="text-garden-800 font-medium text-sm mb-2">Kildare conditions</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm text-garden-700">
+          <p>Last frost: ~April 20</p>
+          <p>First frost: ~October 30</p>
+          <p>Zone: H4–H5 (RHS)</p>
+        </div>
       </div>
     </div>
   );
