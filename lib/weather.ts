@@ -20,11 +20,14 @@ export interface WeatherForecast {
   fetchedAt: string;
 }
 
-export async function getWeatherForecast(): Promise<WeatherForecast> {
+export async function getWeatherForecast(
+  lat: number = KILDARE.latitude,
+  lng: number = KILDARE.longitude
+): Promise<WeatherForecast> {
   const url =
     `https://api.open-meteo.com/v1/forecast` +
-    `?latitude=${KILDARE.latitude}` +
-    `&longitude=${KILDARE.longitude}` +
+    `?latitude=${lat}` +
+    `&longitude=${lng}` +
     `&daily=temperature_2m_min,temperature_2m_max,precipitation_sum` +
     `&timezone=Europe%2FDublin` +
     `&forecast_days=4`;
