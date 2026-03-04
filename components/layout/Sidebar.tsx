@@ -7,6 +7,7 @@ import {
   Bed,
   ClipboardList,
   BookOpen,
+  Bug,
   Settings,
 } from "lucide-react";
 
@@ -17,6 +18,7 @@ const navItems = [
   { href: "/beds", label: "Beds", icon: Bed },
   { href: "/jobs", label: "Monthly Jobs", icon: ClipboardList },
   { href: "/journal", label: "Journal", icon: BookOpen },
+  { href: "/pests", label: "Pest Guide", icon: Bug },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
