@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -22,11 +25,9 @@ const navItems = [
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-interface SidebarProps {
-  currentPath?: string;
-}
+export function Sidebar() {
+  const pathname = usePathname();
 
-export function Sidebar({ currentPath }: SidebarProps) {
   return (
     <aside className="hidden md:flex md:flex-col w-56 lg:w-64 border-r bg-background min-h-screen">
       {/* Logo */}
@@ -42,7 +43,8 @@ export function Sidebar({ currentPath }: SidebarProps) {
       <nav className="flex-1 px-3 py-4 space-y-1">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = currentPath === item.href || currentPath?.startsWith(item.href + "/");
+          const isActive =
+            pathname === item.href || pathname?.startsWith(item.href + "/");
           return (
             <Link
               key={item.href}

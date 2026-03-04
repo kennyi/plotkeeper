@@ -160,23 +160,17 @@ export interface JournalEntry {
   created_at: string;
 }
 
+export interface AppFeedback {
+  id: string;
+  feedback_type: "bug" | "suggestion" | "question" | "observation" | null;
+  page_context: string | null;
+  message: string;
+  status: "open" | "noted" | "done" | "wontfix";
+  created_at: string;
+}
+
 // Utility types for UI
 export type PlantCategory = Plant["category"];
 export type SunRequirement = "full_sun" | "partial_shade" | "full_shade";
 export type SlugRisk = "low" | "medium" | "high";
-
-export const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
-
-export const PLANT_CATEGORIES: { value: PlantCategory; label: string }[] = [
-  { value: "vegetable", label: "Vegetables" },
-  { value: "flower", label: "Flowers" },
-  { value: "herb", label: "Herbs" },
-  { value: "fruit", label: "Fruit" },
-  { value: "perennial", label: "Perennials" },
-  { value: "annual", label: "Annuals" },
-  { value: "bulb", label: "Bulbs" },
-  { value: "shrub", label: "Shrubs" },
-];
+// MONTH_NAMES and PLANT_CATEGORIES live in lib/constants.ts — import from there

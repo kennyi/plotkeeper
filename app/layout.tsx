@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { MobileNav } from "@/components/layout/MobileNav";
+import { FeedbackButton } from "@/components/layout/FeedbackButton";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,6 +30,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* Mobile bottom nav */}
         <MobileNav />
+
+        {/* Feedback button — fixed, above mobile nav */}
+        <FeedbackButton />
       </body>
     </html>
   );
