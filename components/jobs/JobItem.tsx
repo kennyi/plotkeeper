@@ -1,6 +1,9 @@
 "use client";
 
-import { toggleJobDoneAction, deleteCustomJobAction } from "@/app/actions/jobs";
+import { useState } from "react";
+import { toggleJobDoneAction, deleteCustomJobAction, updateCustomJobAction } from "@/app/actions/jobs";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import type { MonthlyJob } from "@/types";
 
@@ -27,6 +30,8 @@ const CATEGORY_LABELS: Record<NonNullable<MonthlyJob["category"]>, string> = {
   deadhead: "Deadhead",
 };
 
+const CATEGORY_OPTIONS = Object.entries(CATEGORY_LABELS) as [NonNullable<MonthlyJob["category"]>, string][];
+
 interface JobItemProps {
   job: MonthlyJob;
   currentYear: number;
@@ -34,6 +39,7 @@ interface JobItemProps {
 
 export function JobItem({ job, currentYear }: JobItemProps) {
   const doneThisYear = job.is_done && job.done_year === currentYear;
+  const [showEdit, setShowEdit] = useState(false);
 
   const toggle = async () => {
     await toggleJobDoneAction(job.id, !doneThisYear, job.month);
@@ -44,68 +50,132 @@ export function JobItem({ job, currentYear }: JobItemProps) {
     await deleteCustomJobAction(job.id);
   };
 
+  const handleUpdate = async (formData: FormData) => {
+    await updateCustomJobAction(job.id, formData);
+    setShowEdit(false);
+    toast.success("Job updated");
+  };
+
   return (
-    <div
-      className={`flex items-start gap-3 py-3 border-b last:border-b-0 group ${
-        doneThisYear ? "opacity-50" : ""
-      }`}
-    >
-      {/* Checkbox */}
-      <form action={toggle} className="mt-0.5 shrink-0">
-        <button
-          type="submit"
-          className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
-            doneThisYear
-              ? "bg-green-500 border-green-500 text-white"
-              : "border-input hover:border-green-500"
-          }`}
-          aria-label={doneThisYear ? "Mark undone" : "Mark done"}
-        >
-          {doneThisYear && (
-            <svg viewBox="0 0 12 12" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="2,6 5,9 10,3" />
-            </svg>
-          )}
-        </button>
-      </form>
-
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <p className={`text-sm ${doneThisYear ? "line-through" : ""}`}>
-          {job.title}
-        </p>
-        {job.description && (
-          <p className="text-xs text-muted-foreground mt-0.5">{job.description}</p>
-        )}
-        {job.notes && !job.description && (
-          <p className="text-xs text-muted-foreground mt-0.5">{job.notes}</p>
-        )}
-      </div>
-
-      {/* Tags */}
-      <div className="flex items-center gap-1.5 shrink-0">
-        {job.category && (
-          <span className="text-xs text-muted-foreground hidden sm:inline">
-            {CATEGORY_LABELS[job.category]}
-          </span>
-        )}
-        <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${PRIORITY_CLASSES[job.priority]}`}>
-          {job.priority}
-        </span>
-        {job.is_custom && (
-          <form action={remove}>
-            <button
-              type="submit"
-              className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity ml-1"
-              aria-label="Delete custom job"
-            >
-              <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M3 4h10M6 4V2h4v2M5 4l.5 9h5l.5-9" />
+    <div className={`border-b last:border-b-0 group ${doneThisYear ? "opacity-50" : ""}`}>
+      <div className="flex items-start gap-3 py-3">
+        {/* Checkbox */}
+        <form action={toggle} className="mt-0.5 shrink-0">
+          <button
+            type="submit"
+            className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
+              doneThisYear
+                ? "bg-green-500 border-green-500 text-white"
+                : "border-input hover:border-green-500"
+            }`}
+            aria-label={doneThisYear ? "Mark undone" : "Mark done"}
+          >
+            {doneThisYear && (
+              <svg viewBox="0 0 12 12" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="2,6 5,9 10,3" />
               </svg>
-            </button>
-          </form>
-        )}
+            )}
+          </button>
+        </form>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <p className={`text-sm ${doneThisYear ? "line-through" : ""}`}>
+            {job.title}
+          </p>
+          {job.description && (
+            <p className="text-xs text-muted-foreground mt-0.5">{job.description}</p>
+          )}
+          {job.notes && !job.description && (
+            <p className="text-xs text-muted-foreground mt-0.5">{job.notes}</p>
+          )}
+        </div>
+
+        {/* Tags + actions */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {job.category && (
+            <span className="text-xs text-muted-foreground hidden sm:inline">
+              {CATEGORY_LABELS[job.category]}
+            </span>
+          )}
+          <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${PRIORITY_CLASSES[job.priority]}`}>
+            {job.priority}
+          </span>
+          {job.is_custom && (
+            <>
+              {/* Edit */}
+              <button
+                type="button"
+                onClick={() => setShowEdit((v) => !v)}
+                className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity ml-1"
+                aria-label="Edit job"
+              >
+                <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M11 2l3 3-8 8H3v-3l8-8z" />
+                </svg>
+              </button>
+              {/* Delete */}
+              <form action={remove}>
+                <button
+                  type="submit"
+                  className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity ml-0.5"
+                  aria-label="Delete custom job"
+                >
+                  <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M3 4h10M6 4V2h4v2M5 4l.5 9h5l.5-9" />
+                  </svg>
+                </button>
+              </form>
+            </>
+          )}
+        </div>
       </div>
+
+      {/* Inline edit form */}
+      {showEdit && job.is_custom && (
+        <form action={handleUpdate} className="pb-3 pl-8 pr-0 space-y-2">
+          <Input
+            name="title"
+            defaultValue={job.title}
+            required
+            placeholder="Task description"
+            className="text-sm h-8"
+          />
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Category</label>
+              <select
+                name="category"
+                defaultValue={job.category ?? ""}
+                className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                <option value="">— none —</option>
+                {CATEGORY_OPTIONS.map(([val, label]) => (
+                  <option key={val} value={val}>{label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Priority</label>
+              <select
+                name="priority"
+                defaultValue={job.priority}
+                className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button type="submit" size="sm" className="h-7 text-xs">Save</Button>
+            <Button type="button" size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setShowEdit(false)}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      )}
     </div>
   );
 }
