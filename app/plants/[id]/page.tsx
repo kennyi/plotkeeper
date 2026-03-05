@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import Link from "next/link";
 import { getPlant } from "@/lib/supabase";
+import { SavedToast } from "@/components/ui/SavedToast";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -76,13 +78,20 @@ export default async function PlantDetailPage({ params, searchParams }: PlantDet
 
   return (
     <div>
-      {/* Back link */}
-      <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2">
-        <Link href={backHref}>
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          {backLabel}
-        </Link>
-      </Button>
+      <Suspense><SavedToast message="Plant saved" /></Suspense>
+
+      {/* Back link + Edit button */}
+      <div className="flex items-center justify-between mb-4">
+        <Button variant="ghost" size="sm" asChild className="-ml-2">
+          <Link href={backHref}>
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            {backLabel}
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" asChild>
+          <Link href={`/plants/${plant.id}/edit`}>Edit</Link>
+        </Button>
+      </div>
 
       {/* Header */}
       <div className="mb-6">

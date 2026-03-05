@@ -1,6 +1,7 @@
 "use client";
 
 import { toggleJobDoneAction, deleteCustomJobAction } from "@/app/actions/jobs";
+import { toast } from "sonner";
 import type { MonthlyJob } from "@/types";
 
 const PRIORITY_CLASSES = {
@@ -36,6 +37,7 @@ export function JobItem({ job, currentYear }: JobItemProps) {
 
   const toggle = async () => {
     await toggleJobDoneAction(job.id, !doneThisYear, job.month);
+    if (!doneThisYear) toast.success("Job done ✓");
   };
 
   const remove = async () => {

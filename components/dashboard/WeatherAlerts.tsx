@@ -3,22 +3,11 @@
 import { useState } from "react";
 import type { WeatherAlert } from "@/lib/weather";
 
-const ALERT_CONFIG = {
-  frost: {
-    icon: "❄️",
-    classes: "bg-blue-50 border-blue-200 text-blue-800",
-    dismissKey: "frost",
-  },
-  slug: {
-    icon: "🐌",
-    classes: "bg-amber-50 border-amber-200 text-amber-800",
-    dismissKey: "slug",
-  },
-  blight: {
-    icon: "🍅",
-    classes: "bg-red-50 border-red-200 text-red-800",
-    dismissKey: "blight",
-  },
+const ALERT_CONFIG: Record<string, { icon: string; classes: string }> = {
+  frost:  { icon: "❄️", classes: "bg-blue-50 border-blue-200 text-blue-800" },
+  slug:   { icon: "🐌", classes: "bg-amber-50 border-amber-200 text-amber-800" },
+  blight: { icon: "🍅", classes: "bg-red-50 border-red-200 text-red-800" },
+  rain:   { icon: "🌧️", classes: "bg-sky-50 border-sky-200 text-sky-800" },
 };
 
 interface WeatherAlertsProps {

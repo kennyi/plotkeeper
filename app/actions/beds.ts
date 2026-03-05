@@ -37,7 +37,7 @@ export async function createBedAction(formData: FormData) {
   const values = parseBedForm(formData);
   const bed = await createBed(values);
   revalidatePath("/beds");
-  redirect(`/beds/${bed.id}`);
+  redirect(`/beds/${bed.id}?saved=1`);
 }
 
 export async function updateBedAction(id: string, formData: FormData) {
@@ -45,7 +45,7 @@ export async function updateBedAction(id: string, formData: FormData) {
   await updateBed(id, values);
   revalidatePath("/beds");
   revalidatePath(`/beds/${id}`);
-  redirect(`/beds/${id}`);
+  redirect(`/beds/${id}?saved=1`);
 }
 
 export async function deleteBedAction(id: string) {
