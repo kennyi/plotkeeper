@@ -3,12 +3,12 @@ import { Header } from "@/components/layout/Header";
 import { MonthSelector } from "@/components/calendar/MonthSelector";
 import { CalendarFilters } from "@/components/calendar/CalendarFilters";
 import { CalendarPlantCard } from "@/components/calendar/CalendarPlantCard";
-import { getPlantsForMonth } from "@/lib/supabase";
+import { getPlantsForMonth, getMyPlantsForMonth } from "@/lib/supabase";
 import { Plant } from "@/types";
 import { KILDARE } from "@/lib/constants";
 
 interface CalendarPageProps {
-  searchParams: { month?: string; category?: string };
+  searchParams: { month?: string; category?: string; mine?: string };
 }
 
 function getActionsForPlant(plant: Plant, month: number): string[] {
@@ -60,10 +60,12 @@ type ActionGroup = {
   plants: { plant: Plant; actions: string[] }[];
 };
 
-async function CalendarGrid({ month, category }: { month: number; category?: string }) {
+async function CalendarGrid({ month, category, mineOnly }: { month: number; category?: string; mineOnly?: boolean }) {
   let plants: Plant[];
   try {
-    plants = await getPlantsForMonth(month, category || undefined);
+    plants = mineOnly
+      ? await getMyPlantsForMonth(month)
+      : await getPlantsForMonth(month, category || undefined);
   } catch {
     return (
       <div className="text-center py-12 text-muted-foreground">
@@ -77,7 +79,11 @@ async function CalendarGrid({ month, category }: { month: number; category?: str
     return (
       <div className="text-center py-12 text-muted-foreground">
         <p>No planting activity for this month.</p>
-        <p className="text-sm mt-1">Run the seed migrations to populate the plant database.</p>
+        <p className="text-sm mt-1">
+          {mineOnly
+            ? "No active plantings this month. Add plants to your beds to see them here."
+            : "Run the seed migrations to populate the plant database."}
+        </p>
       </div>
     );
   }
@@ -106,6 +112,7 @@ async function CalendarGrid({ month, category }: { month: number; category?: str
     <div className="space-y-6">
       <p className="text-sm text-muted-foreground">
         {plants.length} plant{plants.length !== 1 ? "s" : ""} active this month
+        {mineOnly && " · showing your beds only"}
       </p>
 
       {activeGroups.map((group) => (
@@ -148,6 +155,11 @@ function IrelandTips({ month }: { month: number }) {
 export default function CalendarPage({ searchParams }: CalendarPageProps) {
   const month = Math.min(12, Math.max(1, parseInt(searchParams.month ?? "") || new Date().getMonth() + 1));
   const category = searchParams.category ?? "";
+  const mineOnly = searchParams.mine === "1";
+
+  const toggleMineHref = mineOnly
+    ? `?month=${month}${category ? `&category=${category}` : ""}`
+    : `?month=${month}${category ? `&category=${category}` : ""}&mine=1`;
 
   return (
     <div>
@@ -162,9 +174,29 @@ export default function CalendarPage({ searchParams }: CalendarPageProps) {
         </Suspense>
       </div>
 
-      <Suspense>
-        <CalendarFilters />
-      </Suspense>
+      {/* Mine toggle */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="flex rounded-lg border overflow-hidden text-sm">
+          <a
+            href={`?month=${month}${category ? `&category=${category}` : ""}`}
+            className={`px-3 py-1.5 transition-colors ${!mineOnly ? "bg-foreground text-background font-medium" : "text-muted-foreground hover:bg-muted"}`}
+          >
+            All plants
+          </a>
+          <a
+            href={toggleMineHref}
+            className={`px-3 py-1.5 transition-colors ${mineOnly ? "bg-foreground text-background font-medium" : "text-muted-foreground hover:bg-muted"}`}
+          >
+            My beds only
+          </a>
+        </div>
+      </div>
+
+      {!mineOnly && (
+        <Suspense>
+          <CalendarFilters />
+        </Suspense>
+      )}
 
       <IrelandTips month={month} />
 
@@ -177,7 +209,7 @@ export default function CalendarPage({ searchParams }: CalendarPageProps) {
           </div>
         }
       >
-        <CalendarGrid month={month} category={category} />
+        <CalendarGrid month={month} category={mineOnly ? undefined : category} mineOnly={mineOnly} />
       </Suspense>
     </div>
   );

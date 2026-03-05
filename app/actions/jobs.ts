@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { toggleJobDone, createCustomJob, deleteCustomJob } from "@/lib/supabase";
+import { toggleJobDone, createCustomJob, deleteCustomJob, updateCustomJob } from "@/lib/supabase";
 import type { MonthlyJob } from "@/types";
 
 export async function toggleJobDoneAction(
@@ -31,5 +31,19 @@ export async function createCustomJobAction(month: number, formData: FormData) {
 
 export async function deleteCustomJobAction(id: string) {
   await deleteCustomJob(id);
+  revalidatePath(`/jobs`);
+}
+
+export async function updateCustomJobAction(id: string, formData: FormData) {
+  const title = (formData.get("title") as string)?.trim();
+  if (!title) return;
+
+  await updateCustomJob(id, {
+    title,
+    category: (formData.get("category") as MonthlyJob["category"]) || null,
+    priority: (formData.get("priority") as MonthlyJob["priority"]) || "medium",
+    notes: (formData.get("notes") as string)?.trim() || null,
+  });
+
   revalidatePath(`/jobs`);
 }

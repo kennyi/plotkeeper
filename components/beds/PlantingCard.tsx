@@ -9,6 +9,7 @@ import {
   updatePlantingStatusAction,
   deletePlantingAction,
   updatePlantingPhotoAction,
+  updatePlantingAction,
 } from "@/app/actions/plantings";
 import { logHealthAction } from "@/app/actions/health";
 import { toast } from "sonner";
@@ -61,6 +62,7 @@ export function PlantingCard({ planting, bedId }: PlantingCardProps) {
   const plantName = planting.plant?.name ?? planting.custom_plant_name ?? "Unknown plant";
   const [showHealthForm, setShowHealthForm] = useState(false);
   const [showPhotoUpload, setShowPhotoUpload] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   // Plant link with back-navigation context
@@ -89,6 +91,14 @@ export function PlantingCard({ planting, bedId }: PlantingCardProps) {
     });
   }
 
+  function handleEditPlanting(formData: FormData) {
+    startTransition(async () => {
+      await updatePlantingAction(bedId, planting.id, formData);
+      setShowEdit(false);
+      toast.success("Planting updated");
+    });
+  }
+
   function handleSavePhoto() {
     const input = document.querySelector<HTMLInputElement>(
       `input[name="planting_photo_${planting.id}"]`
@@ -110,7 +120,7 @@ export function PlantingCard({ planting, bedId }: PlantingCardProps) {
         <img
           src={planting.photo_url}
           alt={plantName}
-          className="w-full h-28 object-cover"
+          className="w-full aspect-video object-cover"
         />
       )}
 
@@ -162,7 +172,16 @@ export function PlantingCard({ planting, bedId }: PlantingCardProps) {
               size="sm"
               variant="outline"
               className="text-xs h-7"
-              onClick={() => { setShowHealthForm((v) => !v); setShowPhotoUpload(false); }}
+              onClick={() => { setShowEdit((v) => !v); setShowHealthForm(false); setShowPhotoUpload(false); }}
+            >
+              {showEdit ? "Cancel" : "Edit"}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="text-xs h-7"
+              onClick={() => { setShowHealthForm((v) => !v); setShowPhotoUpload(false); setShowEdit(false); }}
             >
               {showHealthForm ? "Cancel" : "Log health"}
             </Button>
@@ -193,6 +212,91 @@ export function PlantingCard({ planting, bedId }: PlantingCardProps) {
               </Button>
             </form>
           </div>
+        )}
+
+        {/* Edit planting inline form */}
+        {showEdit && (
+          <form action={handleEditPlanting} className="mt-2 p-3 rounded-lg bg-muted/40 space-y-3">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Edit planting</p>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium">Status</label>
+              <select
+                name="status"
+                defaultValue={planting.status}
+                className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                {(["planned","seeds_started","germinating","growing","ready","harvested","finished","failed"] as const).map((s) => (
+                  <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">Label / row</label>
+                <input
+                  type="text"
+                  name="row_label"
+                  defaultValue={planting.row_label ?? ""}
+                  placeholder="e.g. Row A"
+                  className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">Quantity</label>
+                <input
+                  type="number"
+                  name="quantity"
+                  defaultValue={planting.quantity ?? ""}
+                  min="0"
+                  className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">Seeds started</label>
+                <input type="date" name="seeds_started_date"
+                  defaultValue={planting.seeds_started_date?.slice(0, 10) ?? ""}
+                  className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">Planted out</label>
+                <input type="date" name="planted_out_date"
+                  defaultValue={planting.planted_out_date?.slice(0, 10) ?? ""}
+                  className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">Sown outdoors</label>
+                <input type="date" name="sown_outdoors_date"
+                  defaultValue={planting.sown_outdoors_date?.slice(0, 10) ?? ""}
+                  className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">Expected harvest</label>
+                <input type="date" name="expected_harvest_date"
+                  defaultValue={planting.expected_harvest_date?.slice(0, 10) ?? ""}
+                  className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium">Notes</label>
+              <textarea
+                name="notes"
+                rows={2}
+                defaultValue={planting.notes ?? ""}
+                placeholder="Any notes…"
+                className="flex w-full rounded-md border border-input bg-background px-2 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
+              />
+            </div>
+
+            <Button type="submit" size="sm" className="text-xs h-7" disabled={isPending}>
+              {isPending ? "Saving…" : "Save changes"}
+            </Button>
+          </form>
         )}
 
         {/* Health log inline form */}

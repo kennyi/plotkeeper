@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createPlanting, updatePlantingStatus, deletePlanting, updatePlantingPhoto } from "@/lib/supabase";
+import { createPlanting, updatePlantingStatus, deletePlanting, updatePlantingPhoto, updatePlanting } from "@/lib/supabase";
 import type { BedPlanting } from "@/types";
 
 export async function createPlantingAction(bedId: string, formData: FormData) {
@@ -62,5 +62,30 @@ export async function updatePlantingPhotoAction(
   photoUrl: string
 ) {
   await updatePlantingPhoto(plantingId, photoUrl);
+  revalidatePath(`/beds/${bedId}`);
+}
+
+export async function updatePlantingAction(
+  bedId: string,
+  plantingId: string,
+  formData: FormData
+) {
+  const raw = (key: string) => formData.get(key) as string | null;
+  const num = (key: string) => {
+    const v = raw(key);
+    return v && v !== "" ? parseInt(v, 10) : null;
+  };
+
+  await updatePlanting(plantingId, {
+    status: (raw("status") ?? "planned") as BedPlanting["status"],
+    notes: raw("notes") || null,
+    quantity: num("quantity"),
+    row_label: raw("row_label") || null,
+    seeds_started_date: raw("seeds_started_date") || null,
+    sown_outdoors_date: raw("sown_outdoors_date") || null,
+    planted_out_date: raw("planted_out_date") || null,
+    expected_harvest_date: raw("expected_harvest_date") || null,
+  });
+
   revalidatePath(`/beds/${bedId}`);
 }

@@ -51,36 +51,30 @@ export function EntryForm({ beds, plants, action }: EntryFormProps) {
 
   return (
     <form action={action} className="space-y-5">
-      {/* Date + type */}
-      <div className="grid grid-cols-2 gap-4">
-        <Field label="Date">
-          <Input name="entry_date" type="date" defaultValue={today} required />
-        </Field>
-        <Field label="Type">
-          <SelectField name="entry_type" defaultValue="note">
-            {ENTRY_TYPES.map((t) => (
-              <option key={t.value} value={t.value}>{t.label}</option>
-            ))}
-          </SelectField>
-        </Field>
-      </div>
+      {/* Date */}
+      <Field label="Date">
+        <Input name="entry_date" type="date" defaultValue={today} required />
+      </Field>
 
-      {/* Type selector (for conditional fields) — mirrors hidden select */}
-      <div className="flex flex-wrap gap-2">
-        {ENTRY_TYPES.map((t) => (
-          <button
-            key={t.value}
-            type="button"
-            onClick={() => setEntryType(t.value)}
-            className={`text-xs px-3 py-1 rounded-full border transition-colors ${
-              entryType === t.value
-                ? "bg-foreground text-background border-foreground"
-                : "border-input text-muted-foreground hover:border-foreground"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+      {/* Type — pill buttons only */}
+      <div>
+        <label className="text-sm font-medium block mb-2">Type</label>
+        <div className="flex flex-wrap gap-2">
+          {ENTRY_TYPES.map((t) => (
+            <button
+              key={t.value}
+              type="button"
+              onClick={() => setEntryType(t.value)}
+              className={`text-xs px-3 py-1 rounded-full border transition-colors ${
+                entryType === t.value
+                  ? "bg-foreground text-background border-foreground"
+                  : "border-input text-muted-foreground hover:border-foreground"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Hidden entry_type driven by pill selection */}
@@ -120,6 +114,13 @@ export function EntryForm({ beds, plants, action }: EntryFormProps) {
           className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
         />
       </Field>
+
+      {/* Observation-specific: pests/issues */}
+      {entryType === "observation" && (
+        <Field label="Pests / issues observed (optional)">
+          <Input name="symptoms" placeholder="e.g. Aphids on underside of leaves, slug damage" />
+        </Field>
+      )}
 
       {/* Harvest-specific */}
       {entryType === "harvest" && (

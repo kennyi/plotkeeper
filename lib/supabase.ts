@@ -309,6 +309,22 @@ export async function deletePlanting(id: string) {
   if (error) throw error;
 }
 
+export async function updatePlanting(
+  id: string,
+  values: Partial<Pick<BedPlanting,
+    "status" | "notes" | "quantity" | "row_label" |
+    "seeds_started_date" | "sown_outdoors_date" | "planted_out_date" | "expected_harvest_date"
+  >>
+) {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("bed_plantings")
+    .update({ ...values, updated_at: new Date().toISOString() })
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
 export async function updatePlantingPhoto(id: string, photoUrl: string) {
   const supabase = createClient();
   const { error } = await supabase
@@ -372,6 +388,20 @@ export async function deleteCustomJob(id: string) {
     .delete()
     .eq("id", id)
     .eq("is_custom", true); // safety: only delete custom jobs
+
+  if (error) throw error;
+}
+
+export async function updateCustomJob(
+  id: string,
+  values: Partial<Pick<MonthlyJob, "title" | "category" | "priority" | "notes">>
+) {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("monthly_jobs")
+    .update(values)
+    .eq("id", id)
+    .eq("is_custom", true); // safety: only update custom jobs
 
   if (error) throw error;
 }

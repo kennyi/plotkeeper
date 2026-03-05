@@ -85,7 +85,13 @@ export async function createPlantAction(formData: FormData): Promise<void> {
     photo_url: get("photo_url") || null,
   };
 
-  const plant = await createPlant(values);
+  let plant;
+  try {
+    plant = await createPlant(values);
+  } catch (err) {
+    console.error("createPlant failed:", err);
+    throw new Error("Could not save plant. Make sure you are signed in and try again.");
+  }
   revalidatePath("/plants");
   redirect(`/plants/${plant.id}?saved=1`);
 }

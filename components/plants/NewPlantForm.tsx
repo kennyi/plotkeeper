@@ -68,7 +68,7 @@ const CATEGORIES: Plant["category"][] = [
 
 // ── Main form ────────────────────────────────────────────────────────────────
 
-export function NewPlantForm() {
+export function NewPlantForm({ aiEnabled = false }: { aiEnabled?: boolean }) {
   const [lookupName, setLookupName] = useState("");
   const [aiData, setAiData] = useState<AiData | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
@@ -112,7 +112,7 @@ export function NewPlantForm() {
     <div className="max-w-2xl space-y-8">
 
       {/* ── AI lookup strip ── */}
-      <div className="p-4 rounded-lg border bg-garden-50 border-garden-200 space-y-3">
+      {aiEnabled && <div className="p-4 rounded-lg border bg-garden-50 border-garden-200 space-y-3">
         <p className="text-sm font-medium text-garden-800">AI-assisted lookup</p>
         <p className="text-xs text-muted-foreground">
           Type the plant name and click Look up — the form fields below will be pre-filled with growing information calibrated for Ireland. Review and adjust before saving.
@@ -142,7 +142,7 @@ export function NewPlantForm() {
         {aiError && (
           <p className="text-xs text-red-600">{aiError}</p>
         )}
-      </div>
+      </div>}
 
       {/* ── Plant form ── */}
       <form action={handleSubmit} className="space-y-8">
@@ -406,7 +406,7 @@ export function NewPlantForm() {
           </Button>
         </div>
 
-        {aiData && (
+        {aiEnabled && aiData && (
           <p className="text-xs text-muted-foreground">
             <Badge variant="outline" className="mr-1.5">AI-assisted</Badge>
             Fields pre-filled by AI. Review carefully before saving — AI data can be imprecise.
