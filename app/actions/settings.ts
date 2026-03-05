@@ -1,16 +1,17 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { upsertSettings } from "@/lib/supabase";
 
 export async function saveSettingsAction(formData: FormData) {
   const keys = [
     "garden_name",
     "owner_name",
-    "location",
+    "location_name",
+    "latitude",
+    "longitude",
     "hardiness_zone",
-    "last_frost_date",
-    "first_frost_date",
     "notes",
   ];
 
@@ -25,4 +26,5 @@ export async function saveSettingsAction(formData: FormData) {
   await upsertSettings(settings);
   revalidatePath("/settings");
   revalidatePath("/dashboard");
+  redirect("/settings?saved=1");
 }

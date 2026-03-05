@@ -4,6 +4,7 @@ import "./globals.css";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { FeedbackButton } from "@/components/layout/FeedbackButton";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -33,6 +34,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* Feedback button — fixed, above mobile nav */}
         <FeedbackButton />
+
+        {/* Toast notifications */}
+        <Toaster position="bottom-center" richColors closeButton />
       </body>
     </html>
   );

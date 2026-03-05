@@ -11,6 +11,7 @@ import {
   updatePlantingPhotoAction,
 } from "@/app/actions/plantings";
 import { logHealthAction } from "@/app/actions/health";
+import { toast } from "sonner";
 import type { BedPlanting, HealthStatus } from "@/types";
 
 type Status = BedPlanting["status"];
@@ -84,6 +85,7 @@ export function PlantingCard({ planting, bedId }: PlantingCardProps) {
     startTransition(async () => {
       await logHealthAction(bedId, planting.id, formData);
       setShowHealthForm(false);
+      toast.success("Health logged");
     });
   }
 
@@ -96,6 +98,7 @@ export function PlantingCard({ planting, bedId }: PlantingCardProps) {
     startTransition(async () => {
       await updatePlantingPhotoAction(bedId, planting.id, url);
       setShowPhotoUpload(false);
+      toast.success("Photo saved");
     });
   }
 

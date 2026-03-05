@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SavedToast } from "@/components/ui/SavedToast";
 import { getSettings } from "@/lib/supabase";
 import { saveSettingsAction } from "@/app/actions/settings";
 
@@ -46,6 +48,7 @@ export default async function SettingsPage() {
 
   return (
     <div>
+      <Suspense><SavedToast message="Settings saved" /></Suspense>
       <Header title="Settings" description="Garden profile and app configuration" />
 
       <form action={saveSettingsAction} className="max-w-xl space-y-8">
@@ -77,26 +80,25 @@ export default async function SettingsPage() {
               label="Latitude"
               name="latitude"
               value={s("latitude")}
-              placeholder="e.g. 53.1588"
-              hint="Used for live weather"
+              placeholder="53.1588"
+              hint="Used for live weather — leave blank for Kildare default"
               type="number"
             />
             <Field
               label="Longitude"
               name="longitude"
               value={s("longitude")}
-              placeholder="e.g. -6.9087"
+              placeholder="-6.9087"
               type="number"
             />
           </div>
         </section>
 
-        {/* Frost & climate */}
+        {/* Climate — just hardiness zone, frost dates are auto from weather API */}
         <section className="space-y-4">
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
             Climate
           </h2>
-
           <div className="space-y-1.5">
             <label htmlFor="hardiness_zone" className="text-sm font-medium">
               Hardiness zone (RHS)
@@ -115,21 +117,10 @@ export default async function SettingsPage() {
                 </option>
               ))}
             </select>
+            <p className="text-xs text-muted-foreground">
+              Frost risk dates are shown on the dashboard via the live weather feed.
+            </p>
           </div>
-
-          <Field
-            label="Last frost (approx.)"
-            name="last_frost_date"
-            value={s("last_frost_date")}
-            placeholder="e.g. April 20"
-            hint="Used to calibrate sowing advice"
-          />
-          <Field
-            label="First autumn frost (approx.)"
-            name="first_frost_date"
-            value={s("first_frost_date")}
-            placeholder="e.g. October 30"
-          />
         </section>
 
         {/* Notes */}

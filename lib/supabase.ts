@@ -30,7 +30,20 @@ export async function getPlants(options?: {
   isCutFlower?: boolean;
 }) {
   const supabase = createClient();
-  let query = supabase.from("plants").select("*").order("name");
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const userId = user?.id ?? null;
+
+  // Show pre-seeded plants (is_user_created=false) + only this user's own additions
+  let query = supabase
+    .from("plants")
+    .select("*")
+    .or(userId
+      ? `is_user_created.eq.false,created_by.eq.${userId}`
+      : `is_user_created.eq.false`
+    )
+    .order("name");
 
   if (options?.category) {
     query = query.eq("category", options.category);
@@ -71,6 +84,49 @@ export async function createPlant(
     .single();
   if (error) throw error;
   return data as Plant;
+}
+
+export async function updatePlant(
+  id: string,
+  values: Partial<Omit<Plant, "id" | "created_at">>
+): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.from("plants").update(values).eq("id", id);
+  if (error) throw error;
+}
+
+/**
+ * Returns plants active this month that the user actually has in their beds.
+ * Used on the dashboard so we don't show every plant in the library.
+ */
+export async function getMyPlantsForMonth(month: number): Promise<Plant[]> {
+  const supabase = createClient();
+
+  // Get plant_ids from user's active plantings
+  const { data: plantings, error: pErr } = await supabase
+    .from("bed_plantings")
+    .select("plant_id")
+    .in("status", ["planned", "seeds_started", "germinating", "growing", "ready"])
+    .not("plant_id", "is", null);
+  if (pErr) throw pErr;
+
+  const allIds = (plantings ?? []).map((p: { plant_id: string }) => p.plant_id);
+  const plantIds = allIds.filter((id, i) => allIds.indexOf(id) === i);
+  if (plantIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from("plants")
+    .select("*")
+    .in("id", plantIds)
+    .or(
+      `and(sow_indoors_start.lte.${month},sow_indoors_end.gte.${month}),` +
+        `and(sow_outdoors_start.lte.${month},sow_outdoors_end.gte.${month}),` +
+        `and(transplant_start.lte.${month},transplant_end.gte.${month}),` +
+        `and(harvest_start.lte.${month},harvest_end.gte.${month})`
+    )
+    .order("name");
+  if (error) throw error;
+  return data as Plant[];
 }
 
 export async function getPlantsForMonth(month: number, category?: string) {

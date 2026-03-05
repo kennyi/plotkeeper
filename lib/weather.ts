@@ -8,7 +8,7 @@ export interface WeatherDay {
 }
 
 export interface WeatherAlert {
-  type: "frost" | "slug" | "blight";
+  type: "frost" | "slug" | "blight" | "rain";
   severity: "warning" | "watch";
   message: string;
   date?: string;
@@ -103,6 +103,22 @@ function computeAlerts(days: WeatherDay[]): WeatherAlert[] {
         message: `Blight conditions possible — check tomatoes and potatoes for early signs`,
       });
     }
+  }
+
+  // Heavy rain warning: any day with >15mm
+  const heavyRainDays = next3.filter((d) => d.precipitation >= 15);
+  if (heavyRainDays.length > 0) {
+    const dates = heavyRainDays
+      .map((d) =>
+        new Date(d.date).toLocaleDateString("en-IE", { weekday: "short", day: "numeric" })
+      )
+      .join(", ");
+    alerts.push({
+      type: "rain",
+      severity: heavyRainDays.some((d) => d.precipitation >= 25) ? "warning" : "watch",
+      message: `Heavy rain forecast ${dates} — delay sowing, check drainage`,
+      date: heavyRainDays[0].date,
+    });
   }
 
   return alerts;

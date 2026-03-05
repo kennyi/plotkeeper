@@ -36,10 +36,11 @@ export function PhotoUpload({
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not logged in");
+      // Pre-auth fallback: use 'shared' until auth is live in Phase 4
+      const userId = user?.id ?? "shared";
 
       const ext = file.name.split(".").pop() ?? "jpg";
-      const path = `${user.id}/${folder}/${Date.now()}.${ext}`;
+      const path = `${userId}/${folder}/${Date.now()}.${ext}`;
 
       const { error: uploadError } = await supabase.storage
         .from("user-uploads")
