@@ -63,6 +63,19 @@ const config: Config = {
           800: "#166534",
           900: "#14532d",
         },
+        // Earthy terracotta for bed/inventory UI
+        terracotta: {
+          50:  "#fdf4f0",
+          100: "#fce4d8",
+          200: "#f9c5ab",
+          300: "#f59f78",
+          400: "#ef7344",
+          500: "#e85420",
+          600: "#c93d11",
+          700: "#a5300e",
+          800: "#852a12",
+          900: "#6d2514",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

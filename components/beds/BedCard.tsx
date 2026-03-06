@@ -1,74 +1,63 @@
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { BedTypeIcon } from "./BedTypeIcon";
 import type { GardenBed } from "@/types";
 
-const BED_TYPE_LABELS: Record<GardenBed["bed_type"], string> = {
-  raised_bed: "Raised Bed",
-  ground_bed: "Ground Bed",
-  pot: "Pot",
-  planter: "Planter",
-  greenhouse_bed: "Greenhouse",
-  window_box: "Window Box",
-  grow_bag: "Grow Bag",
-};
-
-const SUN_LABELS: Record<NonNullable<GardenBed["sun_exposure"]>, string> = {
-  full_sun: "Full Sun",
-  partial_shade: "Part Shade",
-  full_shade: "Full Shade",
-  variable: "Variable",
-};
-
-function dimensionLabel(bed: GardenBed) {
-  if (bed.length_m && bed.width_m) {
-    return `${bed.length_m}m × ${bed.width_m}m`;
-  }
-  return null;
+export interface NextAction {
+  label: string;
+  colorClass: string;
 }
 
 interface BedCardProps {
   bed: GardenBed;
-  activePlantingCount?: number;
+  nextAction?: NextAction | null;
 }
 
-export function BedCard({ bed, activePlantingCount }: BedCardProps) {
-  const dim = dimensionLabel(bed);
-
+export function BedCard({ bed, nextAction }: BedCardProps) {
   return (
     <Link href={`/beds/${bed.id}`} className="block group">
-      <Card className="h-full transition-shadow group-hover:shadow-md overflow-hidden">
-        {bed.photo_url && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={bed.photo_url}
-            alt={bed.name}
-            className="w-full h-32 object-cover"
-          />
-        )}
-        <CardHeader className="pb-2">
-          <div className="flex items-start justify-between gap-2">
-            <CardTitle className="text-base leading-tight">{bed.name}</CardTitle>
-            <Badge variant="secondary" className="shrink-0 text-xs">
-              {BED_TYPE_LABELS[bed.bed_type]}
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-1 text-sm text-muted-foreground">
-          {bed.section && <p>{bed.section}</p>}
-          <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-            {dim && <span>{dim}</span>}
-            {bed.sun_exposure && <span>{SUN_LABELS[bed.sun_exposure]}</span>}
-            {bed.location_label && <span>{bed.location_label}</span>}
-          </div>
-          {bed.soil_type && <p className="truncate">{bed.soil_type}</p>}
-          {activePlantingCount !== undefined && (
-            <p className="text-xs font-medium text-garden-700 pt-1">
-              {activePlantingCount} active planting{activePlantingCount !== 1 ? "s" : ""}
-            </p>
+      <div className="h-full bg-stone-50 border border-stone-200 rounded-2xl overflow-hidden transition-all duration-150 group-hover:shadow-md group-hover:border-stone-300">
+        {/* Icon area */}
+        <div className="flex items-center justify-center pt-8 pb-3 px-6">
+          <BedTypeIcon bedType={bed.bed_type} size={72} />
+        </div>
+
+        {/* Name + section */}
+        <div className="px-4 pb-5 text-center">
+          <p className="font-semibold text-stone-800 text-base leading-tight">{bed.name}</p>
+          {bed.section && (
+            <p className="text-xs text-stone-500 mt-0.5">{bed.section}</p>
           )}
-        </CardContent>
-      </Card>
+
+          {/* Next action badge */}
+          {nextAction ? (
+            <div className="mt-3">
+              <span className={`inline-block text-xs font-medium px-2.5 py-1 rounded-full ${nextAction.colorClass}`}>
+                {nextAction.label}
+              </span>
+            </div>
+          ) : (
+            <div className="mt-3 h-6" /> /* spacer to keep card heights consistent */
+          )}
+        </div>
+      </div>
     </Link>
   );
+}
+
+/**
+ * Derives the single most-urgent next action from a bed's active planting statuses.
+ * Priority: ready > germinating > seeds_started > growing > planned
+ */
+export function deriveNextAction(statuses: string[]): NextAction | null {
+  if (statuses.includes("ready"))
+    return { label: "Harvest ready",      colorClass: "bg-emerald-100 text-emerald-800" };
+  if (statuses.includes("germinating"))
+    return { label: "Ready to plant out", colorClass: "bg-teal-100 text-teal-700" };
+  if (statuses.includes("seeds_started"))
+    return { label: "Harden off soon",    colorClass: "bg-blue-100 text-blue-700" };
+  if (statuses.includes("growing"))
+    return { label: "Growing well",       colorClass: "bg-garden-100 text-garden-700" };
+  if (statuses.includes("planned"))
+    return { label: "Awaiting sowing",    colorClass: "bg-stone-100 text-stone-600" };
+  return null;
 }
