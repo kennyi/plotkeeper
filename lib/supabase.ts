@@ -441,8 +441,7 @@ export async function getInventoryJobs(month: number): Promise<MonthlyJob[]> {
     .neq("status", "failed")
     .neq("status", "finished");
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rawCategories = (plantings ?? []).map((p: any) => {
+  const rawCategories = (plantings ?? []).map((p: { plants: { category: string }[] | { category: string } | null }) => {
     const plant = Array.isArray(p.plants) ? p.plants[0] : p.plants;
     return plant?.category as string | undefined;
   });
