@@ -98,6 +98,7 @@ export interface GardenBed {
   grid_x: number | null;
   grid_y: number | null;
   is_active: boolean;
+  is_indoor: boolean;
   notes: string | null;
   photo_url: string | null;
   created_at: string;

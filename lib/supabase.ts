@@ -99,6 +99,33 @@ export async function updatePlant(
  * Returns plants active this month that the user actually has in their beds.
  * Used on the dashboard so we don't show every plant in the library.
  */
+/**
+ * Returns plants the user has in their beds (any active status).
+ * Used on the plant library "My plants" tab.
+ */
+export async function getMyPlants(options?: { search?: string; category?: string }): Promise<Plant[]> {
+  const supabase = createClient();
+
+  const { data: plantings, error: pErr } = await supabase
+    .from("bed_plantings")
+    .select("plant_id")
+    .not("plant_id", "is", null)
+    .neq("status", "failed");
+  if (pErr) throw pErr;
+
+  const allIds = (plantings ?? []).map((p: { plant_id: string }) => p.plant_id);
+  const plantIds = allIds.filter((id, i) => allIds.indexOf(id) === i);
+  if (plantIds.length === 0) return [];
+
+  let query = supabase.from("plants").select("*").in("id", plantIds).order("name");
+  if (options?.category) query = query.eq("category", options.category);
+  if (options?.search) query = query.ilike("name", `%${options.search}%`);
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return data as Plant[];
+}
+
 export async function getMyPlantsForMonth(month: number): Promise<Plant[]> {
   const supabase = createClient();
 

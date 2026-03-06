@@ -28,6 +28,7 @@ function parseBedForm(formData: FormData): BedFormValues {
     grid_x: null,
     grid_y: null,
     is_active: true,
+    is_indoor: raw("is_indoor") === "true",
     notes: raw("notes") || null,
     photo_url: raw("photo_url") || null,
   };

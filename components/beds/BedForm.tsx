@@ -97,6 +97,32 @@ export function BedForm({ defaultValues, action, submitLabel }: BedFormProps) {
         </Field>
       </div>
 
+      {/* Indoor / Outdoor */}
+      <Field label="Growing environment">
+        <div className="flex rounded-lg border overflow-hidden text-sm w-fit">
+          {[
+            { value: "false", label: "Outdoors" },
+            { value: "true", label: "Indoors / undercover" },
+          ].map(({ value, label }) => (
+            <label
+              key={value}
+              className="relative flex items-center cursor-pointer"
+            >
+              <input
+                type="radio"
+                name="is_indoor"
+                value={value}
+                defaultChecked={value === String(defaultValues?.is_indoor ?? false)}
+                className="sr-only peer"
+              />
+              <span className="px-3 py-1.5 transition-colors text-muted-foreground hover:bg-muted peer-checked:bg-foreground peer-checked:text-background peer-checked:font-medium">
+                {label}
+              </span>
+            </label>
+          ))}
+        </div>
+      </Field>
+
       {/* Dimensions */}
       <div>
         <p className="text-sm font-medium text-foreground mb-3">Dimensions (metres, optional)</p>
