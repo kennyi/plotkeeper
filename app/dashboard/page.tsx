@@ -283,7 +283,7 @@ export default async function DashboardPage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {beds.slice(0, 3).map((bed) => (
-              <BedCard key={bed.id} bed={bed} activePlantingCount={bed.active_planting_count} />
+              <BedCard key={bed.id} bed={bed} />
             ))}
           </div>
         </div>
