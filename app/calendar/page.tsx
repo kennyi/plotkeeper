@@ -155,11 +155,8 @@ function IrelandTips({ month }: { month: number }) {
 export default function CalendarPage({ searchParams }: CalendarPageProps) {
   const month = Math.min(12, Math.max(1, parseInt(searchParams.month ?? "") || new Date().getMonth() + 1));
   const category = searchParams.category ?? "";
-  const mineOnly = searchParams.mine === "1";
-
-  const toggleMineHref = mineOnly
-    ? `?month=${month}${category ? `&category=${category}` : ""}`
-    : `?month=${month}${category ? `&category=${category}` : ""}&mine=1`;
+  // Default to "my beds only"; pass ?mine=0 to see all plants
+  const mineOnly = searchParams.mine !== "0";
 
   return (
     <div>
@@ -174,22 +171,20 @@ export default function CalendarPage({ searchParams }: CalendarPageProps) {
         </Suspense>
       </div>
 
-      {/* Mine toggle */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="flex rounded-lg border overflow-hidden text-sm">
-          <a
-            href={`?month=${month}${category ? `&category=${category}` : ""}`}
-            className={`px-3 py-1.5 transition-colors ${!mineOnly ? "bg-foreground text-background font-medium" : "text-muted-foreground hover:bg-muted"}`}
-          >
-            All plants
-          </a>
-          <a
-            href={toggleMineHref}
-            className={`px-3 py-1.5 transition-colors ${mineOnly ? "bg-foreground text-background font-medium" : "text-muted-foreground hover:bg-muted"}`}
-          >
-            My beds only
-          </a>
-        </div>
+      {/* Mine / All toggle */}
+      <div className="flex rounded-lg border overflow-hidden text-sm mb-4 w-fit">
+        <a
+          href={`?month=${month}`}
+          className={`px-3 py-1.5 transition-colors ${mineOnly ? "bg-foreground text-background font-medium" : "text-muted-foreground hover:bg-muted"}`}
+        >
+          My beds only
+        </a>
+        <a
+          href={`?month=${month}&mine=0${category ? `&category=${category}` : ""}`}
+          className={`px-3 py-1.5 transition-colors ${!mineOnly ? "bg-foreground text-background font-medium" : "text-muted-foreground hover:bg-muted"}`}
+        >
+          All plants
+        </a>
       </div>
 
       {!mineOnly && (
