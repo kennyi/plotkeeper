@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
-import { getMonthlyJobs } from "@/lib/supabase";
+import { getMonthlyJobs, getInventoryJobs } from "@/lib/supabase";
 import { JobItem } from "@/components/jobs/JobItem";
 import { AddJobForm } from "@/components/jobs/AddJobForm";
 import { MONTH_NAMES } from "@/lib/constants";
@@ -14,7 +14,7 @@ const PRIORITY_ORDER: Record<MonthlyJob["priority"], number> = {
 };
 
 interface JobsPageProps {
-  searchParams: { month?: string };
+  searchParams: { month?: string; all?: string };
 }
 
 export default async function JobsPage({ searchParams }: JobsPageProps) {
@@ -25,8 +25,10 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
   const month = Math.min(12, Math.max(1, parseInt(searchParams.month ?? String(currentMonth), 10)));
   const prevMonth = month === 1 ? 12 : month - 1;
   const nextMonth = month === 12 ? 1 : month + 1;
+  // Default: inventory-anchored. Pass ?all=1 to see every seeded job.
+  const inventoryOnly = searchParams.all !== "1";
 
-  const jobs = await getMonthlyJobs(month).catch(() => []);
+  const jobs = await (inventoryOnly ? getInventoryJobs(month) : getMonthlyJobs(month)).catch(() => []);
 
   // Sort: priority order, then built-in before custom
   const sorted = [...jobs].sort((a, b) => {
@@ -49,10 +51,26 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
         description="Gardening tasks for each month in Kildare"
       />
 
+      {/* Inventory / All toggle */}
+      <div className="flex rounded-lg border overflow-hidden text-sm mb-5 w-fit">
+        <Link
+          href={`/jobs?month=${month}`}
+          className={`px-3 py-1.5 transition-colors ${inventoryOnly ? "bg-foreground text-background font-medium" : "text-muted-foreground hover:bg-muted"}`}
+        >
+          My inventory
+        </Link>
+        <Link
+          href={`/jobs?month=${month}&all=1`}
+          className={`px-3 py-1.5 transition-colors ${!inventoryOnly ? "bg-foreground text-background font-medium" : "text-muted-foreground hover:bg-muted"}`}
+        >
+          All jobs
+        </Link>
+      </div>
+
       {/* Month navigation */}
       <div className="flex items-center justify-between mb-6">
         <Button asChild variant="ghost" size="sm">
-          <Link href={`/jobs?month=${prevMonth}`}>← {MONTH_NAMES[prevMonth - 1]}</Link>
+          <Link href={`/jobs?month=${prevMonth}${!inventoryOnly ? "&all=1" : ""}`}>← {MONTH_NAMES[prevMonth - 1]}</Link>
         </Button>
 
         <div className="text-center">
@@ -72,7 +90,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
         </div>
 
         <Button asChild variant="ghost" size="sm">
-          <Link href={`/jobs?month=${nextMonth}`}>{MONTH_NAMES[nextMonth - 1]} →</Link>
+          <Link href={`/jobs?month=${nextMonth}${!inventoryOnly ? "&all=1" : ""}`}>{MONTH_NAMES[nextMonth - 1]} →</Link>
         </Button>
       </div>
 
@@ -83,7 +101,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
           return (
             <Link
               key={m}
-              href={`/jobs?month=${m}`}
+              href={`/jobs?month=${m}${!inventoryOnly ? "&all=1" : ""}`}
               className={`text-xs px-2 py-1 rounded transition-colors ${
                 m === month
                   ? "bg-foreground text-background font-medium"
@@ -101,7 +119,14 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
       {/* Jobs list */}
       {sorted.length === 0 ? (
         <div className="py-8 text-center text-muted-foreground text-sm">
-          No tasks for {MONTH_NAMES[month - 1]}.
+          {inventoryOnly
+            ? `No jobs this month for your current inventory. `
+            : `No tasks for ${MONTH_NAMES[month - 1]}.`}
+          {inventoryOnly && (
+            <Link href={`/jobs?month=${month}&all=1`} className="underline">
+              Show all jobs
+            </Link>
+          )}
         </div>
       ) : (
         <div>

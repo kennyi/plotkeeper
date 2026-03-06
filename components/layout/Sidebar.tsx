@@ -7,9 +7,8 @@ import {
   LayoutDashboard,
   Calendar,
   Leaf,
-  Bed,
+  Archive,
   ClipboardList,
-  BookOpen,
   Bug,
   Settings,
   LogOut,
@@ -18,11 +17,10 @@ import { logoutAction } from "@/app/actions/auth";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/calendar", label: "Calendar", icon: Calendar },
+  { href: "/beds", label: "Inventory", icon: Archive },
   { href: "/plants", label: "Plants", icon: Leaf },
-  { href: "/beds", label: "Beds", icon: Bed },
-  { href: "/jobs", label: "Monthly Jobs", icon: ClipboardList },
-  { href: "/journal", label: "Journal", icon: BookOpen },
+  { href: "/calendar", label: "Calendar", icon: Calendar },
+  { href: "/jobs", label: "Jobs", icon: ClipboardList },
   { href: "/pests", label: "Pest Guide", icon: Bug },
   { href: "/settings", label: "Settings", icon: Settings },
 ];

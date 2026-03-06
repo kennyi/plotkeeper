@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { toggleJobDoneAction, deleteCustomJobAction, updateCustomJobAction } from "@/app/actions/jobs";
+import { toggleJobDoneAction, deleteJobAction, updateCustomJobAction } from "@/app/actions/jobs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -47,7 +47,7 @@ export function JobItem({ job, currentYear }: JobItemProps) {
   };
 
   const remove = async () => {
-    await deleteCustomJobAction(job.id);
+    await deleteJobAction(job.id);
   };
 
   const handleUpdate = async (formData: FormData) => {
@@ -101,33 +101,31 @@ export function JobItem({ job, currentYear }: JobItemProps) {
           <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${PRIORITY_CLASSES[job.priority]}`}>
             {job.priority}
           </span>
+          {/* Edit — custom jobs only */}
           {job.is_custom && (
-            <>
-              {/* Edit */}
-              <button
-                type="button"
-                onClick={() => setShowEdit((v) => !v)}
-                className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity ml-1"
-                aria-label="Edit job"
-              >
-                <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M11 2l3 3-8 8H3v-3l8-8z" />
-                </svg>
-              </button>
-              {/* Delete */}
-              <form action={remove}>
-                <button
-                  type="submit"
-                  className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity ml-0.5"
-                  aria-label="Delete custom job"
-                >
-                  <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M3 4h10M6 4V2h4v2M5 4l.5 9h5l.5-9" />
-                  </svg>
-                </button>
-              </form>
-            </>
+            <button
+              type="button"
+              onClick={() => setShowEdit((v) => !v)}
+              className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity ml-1"
+              aria-label="Edit job"
+            >
+              <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M11 2l3 3-8 8H3v-3l8-8z" />
+              </svg>
+            </button>
           )}
+          {/* Delete — all jobs */}
+          <form action={remove}>
+            <button
+              type="submit"
+              className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity ml-0.5"
+              aria-label="Delete job"
+            >
+              <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M3 4h10M6 4V2h4v2M5 4l.5 9h5l.5-9" />
+              </svg>
+            </button>
+          </form>
         </div>
       </div>
 

@@ -120,7 +120,7 @@ export function PlantingCard({ planting, bedId }: PlantingCardProps) {
         <img
           src={planting.photo_url}
           alt={plantName}
-          className="w-full aspect-video object-cover"
+          className="w-full h-48 object-cover object-center"
         />
       )}
 
@@ -194,17 +194,15 @@ export function PlantingCard({ planting, bedId }: PlantingCardProps) {
               </Button>
             )}
 
-            {!planting.photo_url && (
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                className="text-xs h-7 text-muted-foreground"
-                onClick={() => { setShowPhotoUpload((v) => !v); setShowHealthForm(false); }}
-              >
-                {showPhotoUpload ? "Cancel" : "+ Photo"}
-              </Button>
-            )}
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="text-xs h-7 text-muted-foreground"
+              onClick={() => { setShowPhotoUpload((v) => !v); setShowHealthForm(false); setShowEdit(false); }}
+            >
+              {showPhotoUpload ? "Cancel" : planting.photo_url ? "Edit photo" : "+ Photo"}
+            </Button>
 
             <form action={async () => { await deletePlantingAction(bedId, planting.id); }}>
               <Button type="submit" size="sm" variant="ghost" className="text-xs h-7 text-muted-foreground">
@@ -351,7 +349,7 @@ export function PlantingCard({ planting, bedId }: PlantingCardProps) {
               name={`planting_photo_${planting.id}`}
               folder="plantings"
               label="Planting photo"
-              defaultValue={null}
+              defaultValue={planting.photo_url ?? null}
             />
             <Button
               type="button"
