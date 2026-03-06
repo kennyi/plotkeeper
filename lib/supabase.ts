@@ -419,6 +419,55 @@ export async function deleteCustomJob(id: string) {
   if (error) throw error;
 }
 
+/** Deletes any job (custom or built-in) by id. */
+export async function deleteJob(id: string) {
+  const supabase = createClient();
+  const { error } = await supabase.from("monthly_jobs").delete().eq("id", id);
+  if (error) throw error;
+}
+
+/**
+ * Returns jobs for a given month filtered to categories relevant to the
+ * user's current inventory (plant_category matches a category of plants in
+ * user's beds), plus jobs with no plant_category and custom jobs.
+ */
+export async function getInventoryJobs(month: number): Promise<MonthlyJob[]> {
+  const supabase = createClient();
+
+  // Get distinct plant categories from active bed plantings
+  const { data: plantings } = await supabase
+    .from("bed_plantings")
+    .select("plant_id, plants(category)")
+    .neq("status", "failed")
+    .neq("status", "finished");
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rawCategories = (plantings ?? []).map((p: any) => {
+    const plant = Array.isArray(p.plants) ? p.plants[0] : p.plants;
+    return plant?.category as string | undefined;
+  });
+  const seen = new Set<string>();
+  rawCategories.forEach((c) => { if (c) seen.add(c); });
+  const categories = Array.from(seen);
+
+  // Fetch jobs for the month
+  const { data, error } = await supabase
+    .from("monthly_jobs")
+    .select("*")
+    .eq("month", month)
+    .order("priority");
+
+  if (error) throw error;
+  const all = data as MonthlyJob[];
+
+  if (categories.length === 0) return all;
+
+  // Keep: null plant_category | matching plant_category | custom jobs
+  return all.filter(
+    (j) => j.is_custom || j.plant_category === null || categories.includes(j.plant_category)
+  );
+}
+
 export async function updateCustomJob(
   id: string,
   values: Partial<Pick<MonthlyJob, "title" | "category" | "priority" | "notes">>
