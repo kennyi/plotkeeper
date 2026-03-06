@@ -4,9 +4,10 @@ import { notFound } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { SavedToast } from "@/components/ui/SavedToast";
-import { getBed, getBedPlantings } from "@/lib/supabase";
+import { getBed, getBedPlantings, getPlants } from "@/lib/supabase";
 import { deleteBedAction } from "@/app/actions/beds";
 import { PlantingCard } from "@/components/beds/PlantingCard";
+import { BedGridView } from "@/components/beds/BedGridView";
 import type { GardenBed, BedPlanting } from "@/types";
 
 // Crop history grouped by year
@@ -51,26 +52,26 @@ function CropHistory({ plantings }: { plantings: BedPlanting[] }) {
 }
 
 const BED_TYPE_LABELS: Record<GardenBed["bed_type"], string> = {
-  raised_bed: "Raised Bed",
-  ground_bed: "Ground Bed",
-  pot: "Pot",
-  planter: "Planter",
-  greenhouse_bed: "Greenhouse Bed",
-  window_box: "Window Box",
-  grow_bag: "Grow Bag",
+  raised_bed:      "Raised Bed",
+  ground_bed:      "Ground Bed",
+  pot:             "Pot",
+  planter:         "Planter",
+  greenhouse_bed:  "Greenhouse Bed",
+  window_box:      "Window Box",
+  grow_bag:        "Grow Bag",
 };
 
 const SUN_LABELS: Record<NonNullable<GardenBed["sun_exposure"]>, string> = {
-  full_sun: "Full Sun",
+  full_sun:      "Full Sun",
   partial_shade: "Partial Shade",
-  full_shade: "Full Shade",
-  variable: "Variable",
+  full_shade:    "Full Shade",
+  variable:      "Variable",
 };
 
 const WIND_LABELS: Record<NonNullable<GardenBed["wind_exposure"]>, string> = {
   sheltered: "Sheltered",
-  moderate: "Moderate",
-  exposed: "Exposed",
+  moderate:  "Moderate",
+  exposed:   "Exposed",
 };
 
 interface BedDetailPageProps {
@@ -85,7 +86,11 @@ export default async function BedDetailPage({ params }: BedDetailPageProps) {
     notFound();
   }
 
-  const plantings = await getBedPlantings(params.id).catch(() => []);
+  const [plantings, allPlants] = await Promise.all([
+    getBedPlantings(params.id).catch(() => []),
+    getPlants().catch(() => []),
+  ]);
+
   const activePlantings = plantings.filter(
     (p) => p.status !== "finished" && p.status !== "failed"
   );
@@ -93,8 +98,14 @@ export default async function BedDetailPage({ params }: BedDetailPageProps) {
     (p) => p.status === "finished" || p.status === "failed"
   );
 
-  const deleteBed = deleteBedAction.bind(null, params.id);
+  // Slim down plant data sent to the client component
+  const plantSummaries = allPlants.map((p) => ({
+    id:       p.id,
+    name:     p.name,
+    category: p.category,
+  }));
 
+  const deleteBed = deleteBedAction.bind(null, params.id);
 
   return (
     <div>
@@ -178,11 +189,18 @@ export default async function BedDetailPage({ params }: BedDetailPageProps) {
         )}
       </div>
 
-      {/* Active plantings */}
+      {/* ── Visual planting grid ── */}
+      <BedGridView
+        bed={bed}
+        plantings={activePlantings}
+        allPlants={plantSummaries}
+      />
+
+      {/* ── Active plantings list ── */}
       <div className="border-t pt-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">
-            Plantings {activePlantings.length > 0 && (
+            Plantings{activePlantings.length > 0 && (
               <span className="text-sm font-normal text-muted-foreground ml-1">
                 ({activePlantings.length})
               </span>
@@ -195,18 +213,19 @@ export default async function BedDetailPage({ params }: BedDetailPageProps) {
 
         {activePlantings.length === 0 ? (
           <p className="text-sm text-muted-foreground py-4">
-            No active plantings. Add one to start tracking.
+            No active plantings. Tap a slot above or add one manually.
           </p>
         ) : (
           <div className="space-y-3">
             {activePlantings.map((p) => (
-              <PlantingCard key={p.id} planting={p} bedId={params.id} />
+              <div key={p.id} id={`planting-${p.id}`} className="rounded-lg transition-all duration-300">
+                <PlantingCard planting={p} bedId={params.id} />
+              </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* #24 Spacing calculator */}
       {/* Crop history grouped by year */}
       <CropHistory plantings={pastPlantings} />
     </div>

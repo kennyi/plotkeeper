@@ -192,6 +192,42 @@ export async function getBeds() {
   return data as GardenBed[];
 }
 
+/**
+ * Returns ALL active beds with planting count + statuses array.
+ * Used on the /beds overview page. No row limit.
+ */
+export async function getBedsOverview(): Promise<
+  (GardenBed & { active_planting_count: number; planting_statuses: string[] })[]
+> {
+  const supabase = createClient();
+  const { data: beds, error: bedError } = await supabase
+    .from("garden_beds")
+    .select("*")
+    .eq("is_active", true)
+    .order("name");
+  if (bedError) throw bedError;
+
+  const { data: plantings, error: pError } = await supabase
+    .from("bed_plantings")
+    .select("bed_id, status")
+    .in("status", ["planned", "seeds_started", "germinating", "growing", "ready"]);
+  if (pError) throw pError;
+
+  const countByBed: Record<string, number> = {};
+  const statusesByBed: Record<string, string[]> = {};
+  for (const p of plantings ?? []) {
+    countByBed[p.bed_id] = (countByBed[p.bed_id] ?? 0) + 1;
+    if (!statusesByBed[p.bed_id]) statusesByBed[p.bed_id] = [];
+    statusesByBed[p.bed_id].push(p.status);
+  }
+
+  return (beds as GardenBed[]).map((b) => ({
+    ...b,
+    active_planting_count: countByBed[b.id] ?? 0,
+    planting_statuses: statusesByBed[b.id] ?? [],
+  }));
+}
+
 /** Returns active beds with a count of their active plantings, for the dashboard snapshot. */
 export async function getBedsWithPlantingCount(): Promise<(GardenBed & { active_planting_count: number })[]> {
   const supabase = createClient();

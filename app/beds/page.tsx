@@ -1,17 +1,17 @@
 import Link from "next/link";
 import { Header } from "@/components/layout/Header";
-import { BedCard } from "@/components/beds/BedCard";
+import { BedCard, deriveNextAction } from "@/components/beds/BedCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getBedsWithPlantingCount, getActivePlantings } from "@/lib/supabase";
+import { getBedsOverview, getActivePlantings } from "@/lib/supabase";
 
 const STATUS_LABELS: Record<string, string> = {
-  planned: "Planned",
+  planned:       "Planned",
   seeds_started: "Seeds Started",
-  germinating: "Germinating",
-  growing: "Growing",
-  ready: "Ready",
-  harvested: "Harvested",
+  germinating:   "Germinating",
+  growing:       "Growing",
+  ready:         "Ready",
+  harvested:     "Harvested",
 };
 
 const STATUS_CLASSES: Record<string, string> = {
@@ -26,7 +26,7 @@ const STATUS_CLASSES: Record<string, string> = {
 async function BedList() {
   let beds;
   try {
-    beds = await getBedsWithPlantingCount();
+    beds = await getBedsOverview();
   } catch {
     return (
       <div className="text-center py-16 text-muted-foreground">
@@ -53,9 +53,13 @@ async function BedList() {
       <p className="text-sm text-muted-foreground mb-4">
         {beds.length} bed{beds.length !== 1 ? "s" : ""}
       </p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {beds.map((bed) => (
-          <BedCard key={bed.id} bed={bed} activePlantingCount={bed.active_planting_count} />
+          <BedCard
+            key={bed.id}
+            bed={bed}
+            nextAction={deriveNextAction(bed.planting_statuses)}
+          />
         ))}
       </div>
     </>
@@ -86,7 +90,6 @@ async function PlantView() {
     );
   }
 
-  // Sort by plant name
   const sorted = [...plantings].sort((a, b) => {
     const nameA = a.plant?.name ?? a.custom_plant_name ?? "";
     const nameB = b.plant?.name ?? b.custom_plant_name ?? "";

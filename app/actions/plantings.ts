@@ -56,6 +56,41 @@ export async function deletePlantingAction(bedId: string, plantingId: string) {
   revalidatePath(`/beds/${bedId}`);
 }
 
+/**
+ * Creates a minimal "planned" planting at a specific grid slot.
+ * Called from BedGridView when a user taps an empty slot and selects a plant.
+ * Uses row_number as the 1-indexed slot position.
+ */
+export async function createSlotPlantingAction(
+  bedId: string,
+  slotNumber: number,
+  plantId: string
+) {
+  await createPlanting({
+    bed_id: bedId,
+    plant_id: plantId,
+    custom_plant_name: null,
+    row_number: slotNumber,
+    row_label: null,
+    quantity: 1,
+    area_m2: null,
+    seeds_started_date: null,
+    sown_outdoors_date: null,
+    planted_out_date: null,
+    expected_harvest_date: null,
+    actual_harvest_date: null,
+    removed_date: null,
+    status: "planned",
+    growing_year: new Date().getFullYear(),
+    plant_family: null,
+    notes: null,
+    photo_url: null,
+    current_health: null,
+  });
+
+  revalidatePath(`/beds/${bedId}`);
+}
+
 export async function updatePlantingPhotoAction(
   bedId: string,
   plantingId: string,
