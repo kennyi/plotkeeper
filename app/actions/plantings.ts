@@ -91,6 +91,54 @@ export async function createSlotPlantingAction(
   revalidatePath(`/beds/${bedId}`);
 }
 
+/**
+ * Wizard-flow planting creation.
+ * Accepts: plant_id, slot_number (row_number), quantity, sow_date,
+ * planted_out_date, expected_harvest_date.
+ * Status is derived: "seeds_started" if sow_date present, else "planned".
+ */
+export async function createPlantingWizardAction(bedId: string, formData: FormData) {
+  const raw = (key: string) => formData.get(key) as string | null;
+  const num = (key: string) => {
+    const v = raw(key);
+    return v && v !== "" ? parseInt(v, 10) : null;
+  };
+
+  const plantId = raw("plant_id") || null;
+  const slotNumber = num("slot_number");
+  const sowDate = raw("sow_date") || null;
+  const plantedOutDate = raw("planted_out_date") || null;
+  const expectedHarvestDate = raw("expected_harvest_date") || null;
+  const quantity = num("quantity") ?? 1;
+
+  const status: BedPlanting["status"] = sowDate ? "seeds_started" : "planned";
+
+  await createPlanting({
+    bed_id: bedId,
+    plant_id: plantId,
+    custom_plant_name: null,
+    row_number: slotNumber,
+    row_label: null,
+    quantity,
+    area_m2: null,
+    seeds_started_date: sowDate,
+    sown_outdoors_date: null,
+    planted_out_date: plantedOutDate,
+    expected_harvest_date: expectedHarvestDate,
+    actual_harvest_date: null,
+    removed_date: null,
+    status,
+    growing_year: new Date().getFullYear(),
+    plant_family: null,
+    notes: null,
+    photo_url: null,
+    current_health: null,
+  });
+
+  revalidatePath(`/beds/${bedId}`);
+  redirect(`/beds/${bedId}`);
+}
+
 export async function updatePlantingPhotoAction(
   bedId: string,
   plantingId: string,
