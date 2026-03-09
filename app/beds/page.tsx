@@ -4,28 +4,8 @@ import { BedCard, deriveNextAction } from "@/components/beds/BedCard";
 import { Button } from "@/components/ui/button";
 import { getBedsOverview, getAllPlantings } from "@/lib/supabase";
 import { PlantTopDownIcon } from "@/components/beds/PlantTopDownIcon";
-
-const STATUS_LABELS: Record<string, string> = {
-  planned:       "Planned",
-  seeds_started: "Seeds Started",
-  germinating:   "Germinating",
-  growing:       "Growing",
-  ready:         "Ready",
-  harvested:     "Harvested",
-  finished:      "Finished",
-  failed:        "Failed",
-};
-
-const STATUS_CLASSES: Record<string, string> = {
-  planned:       "bg-slate-100 text-slate-700",
-  seeds_started: "bg-blue-100 text-blue-700",
-  germinating:   "bg-teal-100 text-teal-700",
-  growing:       "bg-green-100 text-green-700",
-  ready:         "bg-emerald-100 text-emerald-800",
-  harvested:     "bg-amber-100 text-amber-700",
-  finished:      "bg-gray-100 text-gray-500",
-  failed:        "bg-red-100 text-red-600",
-};
+import { PLANTING_STATUS_LABELS, PLANTING_STATUS_CLASSES } from "@/lib/constants";
+import type { PlantingStatus } from "@/lib/constants";
 
 async function BedList() {
   let beds;
@@ -118,8 +98,8 @@ async function PlantView() {
               <div className="flex-1 min-w-0">
                 <span className="font-medium">{name}</span>
               </div>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${STATUS_CLASSES[p.status] ?? "bg-gray-100 text-gray-500"}`}>
-                {STATUS_LABELS[p.status] ?? p.status}
+              <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${PLANTING_STATUS_CLASSES[p.status as PlantingStatus] ?? "bg-gray-100 text-gray-500"}`}>
+                {PLANTING_STATUS_LABELS[p.status as PlantingStatus] ?? p.status}
               </span>
             </Link>
           );

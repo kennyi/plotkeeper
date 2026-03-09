@@ -70,3 +70,35 @@ export const JOB_CATEGORIES = [
   { value: "divide", label: "Divide" },
   { value: "deadhead", label: "Deadhead" },
 ] as const;
+
+export type PlantingStatus =
+  | "planned"
+  | "seeds_started"
+  | "germinating"
+  | "growing"
+  | "ready"
+  | "harvested"
+  | "finished"
+  | "failed";
+
+export const PLANTING_STATUS_LABELS: Record<PlantingStatus, string> = {
+  planned:       "Planned",
+  seeds_started: "Seeds Started",
+  germinating:   "Germinating",
+  growing:       "Growing",
+  ready:         "Ready to Harvest",
+  harvested:     "Harvested",
+  finished:      "Finished",
+  failed:        "Failed",
+};
+
+export const PLANTING_STATUS_CLASSES: Record<PlantingStatus, string> = {
+  planned:       "bg-slate-100 text-slate-700",
+  seeds_started: "bg-blue-100 text-blue-700",
+  germinating:   "bg-teal-100 text-teal-700",
+  growing:       "bg-green-100 text-green-700",
+  ready:         "bg-emerald-100 text-emerald-800",
+  harvested:     "bg-amber-100 text-amber-700",
+  finished:      "bg-gray-100 text-gray-500",
+  failed:        "bg-red-100 text-red-600",
+};

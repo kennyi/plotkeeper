@@ -5,8 +5,10 @@ import { PlantTopDownIcon } from "@/components/beds/PlantTopDownIcon";
 import { PlantHealthBadge } from "@/components/beds/PlantHealthBadge";
 import { PlantingDetailClient } from "@/components/beds/PlantingDetailClient";
 import { getPlanting, getHealthLogs } from "@/lib/supabase";
-import { MONTH_NAMES } from "@/lib/constants";
+import { MONTH_NAMES, PLANTING_STATUS_LABELS, PLANTING_STATUS_CLASSES } from "@/lib/constants";
+import { formatDate } from "@/lib/utils";
 import type { Plant } from "@/types";
+import type { PlantingStatus } from "@/lib/constants";
 
 interface PageProps {
   params: { id: string };
@@ -14,15 +16,6 @@ interface PageProps {
 }
 
 // ── Calculation helpers (mirrors AddPlantingWizard logic) ──────────────────
-
-function formatDate(iso: string | null) {
-  if (!iso) return null;
-  return new Date(iso).toLocaleDateString("en-IE", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
 
 function calcGermination(plant: Plant, sowDate: string): string | null {
   if (!plant.germination_days_min) return null;
@@ -49,30 +42,6 @@ function harvestWindowText(plant: Plant): string | null {
   }
   return `${MONTH_NAMES[plant.harvest_start - 1]} – ${MONTH_NAMES[plant.harvest_end - 1]}`;
 }
-
-// ── Status display ─────────────────────────────────────────────────────────
-
-const STATUS_LABELS: Record<string, string> = {
-  planned:       "Planned",
-  seeds_started: "Seeds Started",
-  germinating:   "Germinating",
-  growing:       "Growing",
-  ready:         "Ready to Harvest",
-  harvested:     "Harvested",
-  finished:      "Finished",
-  failed:        "Failed",
-};
-
-const STATUS_CLASSES: Record<string, string> = {
-  planned:       "bg-slate-100 text-slate-700",
-  seeds_started: "bg-blue-100 text-blue-700",
-  germinating:   "bg-teal-100 text-teal-700",
-  growing:       "bg-green-100 text-green-700",
-  ready:         "bg-emerald-100 text-emerald-800",
-  harvested:     "bg-amber-100 text-amber-700",
-  finished:      "bg-gray-100 text-gray-500",
-  failed:        "bg-red-100 text-red-600",
-};
 
 // ── Page ───────────────────────────────────────────────────────────────────
 
@@ -148,8 +117,8 @@ export default async function PlantingDetailPage({ params, searchParams }: PageP
       <div className="flex items-center gap-3 mb-6">
         <PlantTopDownIcon category={plant?.category ?? null} size={44} />
         <div className="space-y-1">
-          <span className={`inline-flex items-center text-sm font-medium px-2.5 py-0.5 rounded-full ${STATUS_CLASSES[planting.status] ?? "bg-gray-100 text-gray-500"}`}>
-            {STATUS_LABELS[planting.status] ?? planting.status}
+          <span className={`inline-flex items-center text-sm font-medium px-2.5 py-0.5 rounded-full ${PLANTING_STATUS_CLASSES[planting.status as PlantingStatus] ?? "bg-gray-100 text-gray-500"}`}>
+            {PLANTING_STATUS_LABELS[planting.status as PlantingStatus] ?? planting.status}
           </span>
           {planting.current_health && (
             <div>
