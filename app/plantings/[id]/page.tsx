@@ -114,7 +114,7 @@ export default async function PlantingDetailPage({ params, searchParams }: PageP
             className="w-full h-full object-cover object-center"
           />
         ) : (
-          <span className="text-7xl">{categoryEmoji(plant?.category ?? null)}</span>
+          <span className="text-7xl">{categoryEmoji(plant?.category ?? "vegetable")}</span>
         )}
       </div>
 
