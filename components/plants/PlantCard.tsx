@@ -19,54 +19,61 @@ export function PlantCard({ plant }: PlantCardProps) {
 
   return (
     <Link href={`/plants/${plant.id}`}>
-      <Card className="h-full hover:shadow-md transition-shadow cursor-pointer hover:border-garden-300 overflow-hidden">
-        {plant.photo_url && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={plant.photo_url}
-            alt={plant.name}
-            className="w-full h-32 object-cover"
-          />
-        )}
+      <Card className="h-full hover:shadow-md transition-shadow cursor-pointer hover:border-garden-300">
         <CardContent className="p-4">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                {!plant.photo_url && <span className="text-base">{categoryEmoji(plant.category)}</span>}
-                <h3 className="font-semibold text-sm truncate">{plant.name}</h3>
-              </div>
-              {plant.latin_name && (
-                <p className="text-xs text-muted-foreground italic truncate mt-0.5">
-                  {plant.latin_name}
-                </p>
+          <div className="flex items-start gap-3 mb-3">
+            {/* Circle thumbnail — image or emoji placeholder */}
+            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-stone-100 flex items-center justify-center">
+              {plant.photo_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={plant.photo_url}
+                  alt={plant.name}
+                  className="w-full h-full object-cover object-center"
+                />
+              ) : (
+                <span className="text-xl">{categoryEmoji(plant.category)}</span>
               )}
             </div>
-            <div className="flex flex-col gap-1 flex-shrink-0">
-              {plant.is_user_created && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 text-garden-700 border-garden-300 bg-garden-50">
-                  My plant
-                </Badge>
-              )}
-              {plant.slug_risk === "high" && (
-                <Badge variant="destructive" className="text-xs px-1.5 py-0">
-                  🐌 High slug risk
-                </Badge>
-              )}
-              {plant.frost_tender && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 text-blue-700 border-blue-200">
-                  ❄️ Frost tender
-                </Badge>
-              )}
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-sm truncate">{plant.name}</h3>
+                  {plant.latin_name && (
+                    <p className="text-xs text-muted-foreground italic truncate mt-0.5">
+                      {plant.latin_name}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1 flex-shrink-0">
+                  {plant.is_user_created && (
+                    <Badge variant="outline" className="text-xs px-1.5 py-0 text-garden-700 border-garden-300 bg-garden-50">
+                      My plant
+                    </Badge>
+                  )}
+                  {plant.slug_risk === "high" && (
+                    <Badge variant="destructive" className="text-xs px-1.5 py-0">
+                      🐌 High slug risk
+                    </Badge>
+                  )}
+                  {plant.frost_tender && (
+                    <Badge variant="outline" className="text-xs px-1.5 py-0 text-blue-700 border-blue-200">
+                      ❄️ Frost tender
+                    </Badge>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
           {plant.description && (
-            <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
+            <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
               {plant.description}
             </p>
           )}
 
-          <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
             {sowWindow && (
               <div>
                 <span className="text-muted-foreground">Sow: </span>

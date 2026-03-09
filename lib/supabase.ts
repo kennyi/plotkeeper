@@ -637,6 +637,26 @@ export async function upsertSettings(settings: Record<string, string>) {
   if (error) throw error;
 }
 
+export async function getActivePlantingCountByPlant(plantId: string): Promise<number> {
+  const supabase = createClient();
+  const { count, error } = await supabase
+    .from("bed_plantings")
+    .select("id", { count: "exact", head: true })
+    .eq("plant_id", plantId)
+    .not("status", "in", '("finished","failed")');
+
+  if (error) throw error;
+  return count ?? 0;
+}
+
+export async function deletePlant(plantId: string): Promise<void> {
+  const supabase = createClient();
+  // Hard-delete plantings first (plant_id FK may not cascade)
+  await supabase.from("bed_plantings").delete().eq("plant_id", plantId);
+  const { error } = await supabase.from("plants").delete().eq("id", plantId);
+  if (error) throw error;
+}
+
 // ── App Feedback ──────────────────────────────────────────────────────────────
 
 export async function createFeedback(

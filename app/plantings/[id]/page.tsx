@@ -4,9 +4,10 @@ import { Header } from "@/components/layout/Header";
 import { PlantTopDownIcon } from "@/components/beds/PlantTopDownIcon";
 import { PlantHealthBadge } from "@/components/beds/PlantHealthBadge";
 import { PlantingDetailClient } from "@/components/beds/PlantingDetailClient";
+import { PlantLibraryInfo } from "@/components/plants/PlantLibraryInfo";
 import { getPlanting, getHealthLogs } from "@/lib/supabase";
 import { MONTH_NAMES, PLANTING_STATUS_LABELS, PLANTING_STATUS_CLASSES } from "@/lib/constants";
-import { formatDate } from "@/lib/utils";
+import { formatDate, categoryEmoji } from "@/lib/utils";
 import type { Plant } from "@/types";
 import type { PlantingStatus } from "@/lib/constants";
 
@@ -103,15 +104,19 @@ export default async function PlantingDetailPage({ params, searchParams }: PageP
         }
       />
 
-      {/* Photo */}
-      {planting.photo_url && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={planting.photo_url}
-          alt={plantName}
-          className="w-full max-h-56 object-cover rounded-xl mb-6"
-        />
-      )}
+      {/* Hero image — always rendered; falls back to category emoji */}
+      <div className="w-full h-48 rounded-2xl overflow-hidden mb-6 bg-stone-100 flex items-center justify-center">
+        {planting.photo_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={planting.photo_url}
+            alt={plantName}
+            className="w-full h-full object-cover object-center"
+          />
+        ) : (
+          <span className="text-7xl">{categoryEmoji(plant?.category ?? "vegetable")}</span>
+        )}
+      </div>
 
       {/* Plant icon + status badge row */}
       <div className="flex items-center gap-3 mb-6">
@@ -214,6 +219,15 @@ export default async function PlantingDetailPage({ params, searchParams }: PageP
         healthLogs={healthLogs}
         from={from}
       />
+
+      {/* About This Plant — library reference info (library plants only) */}
+      {plant && (
+        <>
+          <div className="border-t my-8" />
+          <h2 className="text-base font-semibold mb-4">About {plant.name}</h2>
+          <PlantLibraryInfo plant={plant} />
+        </>
+      )}
     </div>
   );
 }
