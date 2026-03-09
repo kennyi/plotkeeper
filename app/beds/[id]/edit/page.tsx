@@ -22,7 +22,7 @@ export default async function EditBedPage({ params }: EditBedPageProps) {
     <div>
       <Header title={`Edit: ${bed.name}`} description="Update bed details" />
       <div className="max-w-2xl">
-        <BedForm action={action} defaultValues={bed} submitLabel="Save changes" />
+        <BedForm action={action} defaultValues={bed} submitLabel="Save changes" hideDimensions />
       </div>
     </div>
   );

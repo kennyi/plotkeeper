@@ -41,6 +41,8 @@ interface AddPlantingWizardProps {
   bed: GardenBed;
   plants: PlantOption[];
   existingPlantings: ExistingSlotPlanting[];
+  initialPlantId?: string;
+  initialSlot?: number;
 }
 
 // ── Calculation helpers ────────────────────────────────────────────────────────
@@ -346,11 +348,18 @@ export function AddPlantingWizard({
   bed,
   plants,
   existingPlantings,
+  initialPlantId,
+  initialSlot,
 }: AddPlantingWizardProps) {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const preselectedPlant = initialPlantId
+    ? (plants.find((p) => p.id === initialPlantId) ?? null)
+    : null;
+  const initialStep: 1 | 2 | 3 = preselectedPlant && initialSlot ? 3 : preselectedPlant ? 2 : 1;
+
+  const [step, setStep] = useState<1 | 2 | 3>(initialStep);
   const [search, setSearch] = useState("");
-  const [selectedPlant, setSelectedPlant] = useState<PlantOption | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
+  const [selectedPlant, setSelectedPlant] = useState<PlantOption | null>(preselectedPlant);
+  const [selectedSlot, setSelectedSlot] = useState<number | null>(initialSlot ?? null);
   const [sowDate, setSowDate] = useState("");
   const [plantedOutDate, setPlantedOutDate] = useState("");
   const [quantity, setQuantity] = useState("1");

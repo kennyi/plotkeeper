@@ -5,9 +5,10 @@ import { getBed, getPlants, getBedPlantings } from "@/lib/supabase";
 
 interface NewPlantingPageProps {
   params: { id: string };
+  searchParams: { plant_id?: string; slot?: string };
 }
 
-export default async function NewPlantingPage({ params }: NewPlantingPageProps) {
+export default async function NewPlantingPage({ params, searchParams }: NewPlantingPageProps) {
   let bed;
   try {
     bed = await getBed(params.id);
@@ -31,6 +32,9 @@ export default async function NewPlantingPage({ params }: NewPlantingPageProps) 
       name: p.plant?.name ?? p.custom_plant_name ?? null,
     }));
 
+  const initialPlantId = searchParams.plant_id;
+  const initialSlot = searchParams.slot ? parseInt(searchParams.slot, 10) : undefined;
+
   return (
     <div>
       <Header
@@ -43,6 +47,8 @@ export default async function NewPlantingPage({ params }: NewPlantingPageProps) 
           bed={bed}
           plants={plants}
           existingPlantings={existingSlotPlantings}
+          initialPlantId={initialPlantId}
+          initialSlot={Number.isNaN(initialSlot) ? undefined : initialSlot}
         />
       </div>
     </div>

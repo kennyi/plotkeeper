@@ -18,6 +18,7 @@ interface BedFormProps {
   defaultValues?: Partial<GardenBed>;
   action: (formData: FormData) => Promise<void>;
   submitLabel: string;
+  hideDimensions?: boolean;
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -82,7 +83,7 @@ const WIND_OPTIONS = [
   { value: "exposed", label: "Exposed" },
 ];
 
-export function BedForm({ defaultValues, action, submitLabel }: BedFormProps) {
+export function BedForm({ defaultValues, action, submitLabel, hideDimensions }: BedFormProps) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [bedType, setBedType] = useState<string>(defaultValues?.bed_type ?? "raised_bed");
@@ -147,8 +148,8 @@ export function BedForm({ defaultValues, action, submitLabel }: BedFormProps) {
         </div>
       </Field>
 
-      {/* Dimensions — pots get S/M/L picker; everything else gets free-text */}
-      {isPot ? (
+      {/* Dimensions — hidden when editing (locked after creation) */}
+      {!hideDimensions && isPot ? (
         <div>
           <p className="text-sm font-medium text-foreground mb-3">Pot size</p>
           <div className="flex gap-3">
@@ -173,7 +174,7 @@ export function BedForm({ defaultValues, action, submitLabel }: BedFormProps) {
           <input type="hidden" name="width_m" value={potSize.width_m} />
           <input type="hidden" name="depth_m" value={potSize.depth_m} />
         </div>
-      ) : (
+      ) : !hideDimensions ? (
         <div>
           <p className="text-sm font-medium text-foreground mb-3">Dimensions (metres, optional)</p>
           <div className="grid grid-cols-3 gap-4">
@@ -209,7 +210,7 @@ export function BedForm({ defaultValues, action, submitLabel }: BedFormProps) {
             </Field>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Location & Conditions */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

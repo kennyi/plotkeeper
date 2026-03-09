@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import Link from "next/link";
-import { getPlant } from "@/lib/supabase";
+import { getPlant, getBeds } from "@/lib/supabase";
 import { SavedToast } from "@/components/ui/SavedToast";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { monthRange, formatSpacing, formatGermination, formatWeeksIndoors, categoryEmoji } from "@/lib/utils";
 import { ArrowLeft } from "lucide-react";
+import { AddToBedSheet } from "@/components/beds/AddToBedSheet";
 
 interface PlantDetailPageProps {
   params: { id: string };
@@ -43,6 +44,15 @@ export default async function PlantDetailPage({ params, searchParams }: PlantDet
   } catch {
     notFound();
   }
+
+  const beds = await getBeds().catch(() => []);
+  const bedSummaries = beds.map((b) => ({
+    id:       b.id,
+    name:     b.name,
+    bed_type: b.bed_type,
+    length_m: b.length_m,
+    width_m:  b.width_m,
+  }));
 
   // Back link — if coming from a bed, show "Back to [bed]" instead of "Plant Library"
   const from = searchParams.from;
@@ -80,7 +90,7 @@ export default async function PlantDetailPage({ params, searchParams }: PlantDet
     <div>
       <Suspense><SavedToast message="Plant saved" /></Suspense>
 
-      {/* Back link + Edit button */}
+      {/* Back link + actions */}
       <div className="flex items-center justify-between mb-4">
         <Button variant="ghost" size="sm" asChild className="-ml-2">
           <Link href={backHref}>
@@ -88,9 +98,12 @@ export default async function PlantDetailPage({ params, searchParams }: PlantDet
             {backLabel}
           </Link>
         </Button>
-        <Button variant="outline" size="sm" asChild>
-          <Link href={`/plants/${plant.id}/edit`}>Edit</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <AddToBedSheet plantId={plant.id} plantName={plant.name} beds={bedSummaries} />
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/plants/${plant.id}/edit`}>Edit</Link>
+          </Button>
+        </div>
       </div>
 
       {/* Header */}

@@ -1,38 +1,24 @@
 "use client";
 
-import { useState, useTransition, useRef, useEffect } from "react";
-import { PlantTopDownIcon } from "./PlantTopDownIcon";
-import { createSlotPlantingAction } from "@/app/actions/plantings";
-import type { GardenBed, BedPlanting, Plant } from "@/types";
-
-type PlantSummary = Pick<Plant, "id" | "name" | "category">;
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { getPlantColor } from "@/lib/utils";
+import type { GardenBed, BedPlanting } from "@/types";
 
 interface BedGridViewProps {
   bed: GardenBed;
   plantings: BedPlanting[];
-  allPlants: PlantSummary[];
 }
 
-const SLOT_PX = 56; // fixed px per slot — good touch target
+const SLOT_PX = 56;
 
-export function BedGridView({ bed, plantings, allPlants }: BedGridViewProps) {
+export function BedGridView({ bed, plantings }: BedGridViewProps) {
+  const router = useRouter();
   const lengthM = bed.length_m;
   const widthM  = bed.width_m;
 
-  // Default slot size: 50 cm for beds longer than 2 m, else 25 cm
   const defaultSlotSize: 25 | 50 = (lengthM ?? 0) > 2 || (widthM ?? 0) > 1.5 ? 50 : 25;
   const [slotSize, setSlotSize] = useState<25 | 50>(defaultSlotSize);
-  const [activeSlot, setActiveSlot] = useState<number | null>(null);
-  const [search, setSearch]         = useState("");
-  const [isPending, startTransition] = useTransition();
-  const searchRef = useRef<HTMLInputElement>(null);
-
-  // Focus search input when the slot picker opens
-  useEffect(() => {
-    if (activeSlot !== null) {
-      setTimeout(() => searchRef.current?.focus(), 80);
-    }
-  }, [activeSlot]);
 
   if (!lengthM || !widthM) {
     return (
@@ -51,45 +37,18 @@ export function BedGridView({ bed, plantings, allPlants }: BedGridViewProps) {
   // Build a map of slot index (1-based) → planting
   const slotMap = new Map<number, BedPlanting>();
   for (const p of plantings) {
-    if (
-      p.row_number != null &&
-      p.row_number >= 1 &&
-      p.row_number <= totalSlots
-    ) {
-      // If two plantings share a row_number, last one wins
+    if (p.row_number != null && p.row_number >= 1 && p.row_number <= totalSlots) {
       slotMap.set(p.row_number, p);
     }
   }
 
-  const filteredPlants = allPlants
-    .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
-    .slice(0, 30);
-
   function handleSlotTap(slotIndex: number) {
     const existing = slotMap.get(slotIndex);
     if (existing) {
-      // Scroll down to the planting card in the list below
-      const el = document.getElementById(`planting-${existing.id}`);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
-        // Brief highlight
-        el.classList.add("ring-2", "ring-garden-400", "ring-offset-2");
-        setTimeout(() => {
-          el.classList.remove("ring-2", "ring-garden-400", "ring-offset-2");
-        }, 1800);
-      }
+      router.push(`/plantings/${existing.id}`);
     } else {
-      setActiveSlot(slotIndex);
-      setSearch("");
+      router.push(`/beds/${bed.id}/plantings/new?slot=${slotIndex}`);
     }
-  }
-
-  function handleSelectPlant(plant: PlantSummary) {
-    if (activeSlot === null) return;
-    startTransition(async () => {
-      await createSlotPlantingAction(bed.id, activeSlot, plant.id);
-      setActiveSlot(null);
-    });
   }
 
   return (
@@ -122,13 +81,13 @@ export function BedGridView({ bed, plantings, allPlants }: BedGridViewProps) {
       </div>
 
       <p className="text-xs text-muted-foreground mb-3">
-        {cols} × {rows} grid &middot; {slotSize} cm slots &middot; Tap an empty slot to plant
+        {cols} × {rows} grid &middot; {slotSize} cm slots &middot; Tap a slot to plant or view
       </p>
 
       {/* Scrollable grid */}
-      <div className="overflow-x-auto rounded-xl border border-amber-200">
+      <div className="overflow-x-auto rounded-xl border border-stone-200">
         <div
-          className="bg-amber-50"
+          className="bg-stone-50"
           style={{
             display: "grid",
             gridTemplateColumns: `repeat(${cols}, ${SLOT_PX}px)`,
@@ -142,26 +101,35 @@ export function BedGridView({ bed, plantings, allPlants }: BedGridViewProps) {
               ? (planting.plant?.name ?? planting.custom_plant_name ?? "Planted")
               : null;
 
+            const color = plantName ? getPlantColor(plantName) : null;
+
             return (
               <button
                 key={slotIndex}
                 onClick={() => handleSlotTap(slotIndex)}
-                style={{ width: SLOT_PX, height: SLOT_PX }}
+                style={{
+                  width: SLOT_PX,
+                  height: SLOT_PX,
+                  backgroundColor: color?.bg,
+                  borderColor: color?.border ?? undefined,
+                }}
                 className={[
                   "flex items-center justify-center",
-                  "border border-amber-200/60 transition-colors",
+                  "border transition-colors",
                   planting
-                    ? "bg-garden-50 hover:bg-garden-100"
-                    : "hover:bg-amber-100",
+                    ? "hover:brightness-95"
+                    : "border-stone-200 hover:bg-stone-100",
                 ].join(" ")}
                 title={plantName ?? `Empty slot ${slotIndex}`}
                 aria-label={plantName ? `${plantName} — tap to view` : `Empty slot — tap to plant`}
               >
-                {planting && (
-                  <PlantTopDownIcon
-                    category={planting.plant?.category ?? null}
-                    size={Math.round(SLOT_PX * 0.62)}
-                  />
+                {plantName && (
+                  <span
+                    className="text-[9px] font-semibold leading-tight text-center px-0.5 line-clamp-3"
+                    style={{ color: color?.text }}
+                  >
+                    {plantName}
+                  </span>
                 )}
               </button>
             );
@@ -173,83 +141,16 @@ export function BedGridView({ bed, plantings, allPlants }: BedGridViewProps) {
       <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">
           <span className="inline-block w-3 h-3 rounded-sm bg-garden-100 border border-garden-300" />
-          Planted
+          Planted — tap to open
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block w-3 h-3 rounded-sm bg-amber-100 border border-amber-300" />
-          Empty
+          <span className="inline-block w-3 h-3 rounded-sm bg-stone-100 border border-stone-300" />
+          Empty — tap to add
         </span>
         <span className="ml-auto">
           {slotMap.size}/{totalSlots} slots used
         </span>
       </div>
-
-      {/* ── Slot search bottom-sheet ── */}
-      {activeSlot !== null && (
-        <div
-          className="fixed inset-0 z-50 flex flex-col justify-end bg-black/30"
-          onClick={() => setActiveSlot(null)}
-        >
-          <div
-            className="bg-white rounded-t-2xl shadow-2xl flex flex-col"
-            style={{ maxHeight: "72vh" }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Sheet header */}
-            <div className="p-4 border-b shrink-0">
-              <div className="flex items-center justify-between mb-3">
-                <p className="font-semibold text-sm text-stone-800">
-                  Add plant to slot {activeSlot}
-                </p>
-                <button
-                  onClick={() => setActiveSlot(null)}
-                  className="text-sm text-muted-foreground hover:text-stone-700 px-1"
-                >
-                  Cancel
-                </button>
-              </div>
-              <input
-                ref={searchRef}
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search plants…"
-                className="w-full rounded-lg border border-stone-300 bg-stone-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-garden-500 focus:border-transparent"
-              />
-            </div>
-
-            {/* Plant list */}
-            <div className="overflow-y-auto flex-1">
-              {isPending ? (
-                <div className="flex items-center justify-center py-10 text-sm text-muted-foreground">
-                  Planting…
-                </div>
-              ) : filteredPlants.length === 0 ? (
-                <div className="flex items-center justify-center py-10 text-sm text-muted-foreground">
-                  No plants found
-                </div>
-              ) : (
-                filteredPlants.map((plant) => (
-                  <button
-                    key={plant.id}
-                    onClick={() => handleSelectPlant(plant)}
-                    disabled={isPending}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-stone-50 active:bg-stone-100 border-b last:border-b-0 disabled:opacity-50 transition-colors"
-                  >
-                    <div className="shrink-0">
-                      <PlantTopDownIcon category={plant.category} size={36} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-stone-800 truncate">{plant.name}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{plant.category}</p>
-                    </div>
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
