@@ -5,7 +5,8 @@ import { PlantTopDownIcon } from "@/components/beds/PlantTopDownIcon";
 import { PlantHealthBadge } from "@/components/beds/PlantHealthBadge";
 import { PlantingDetailClient } from "@/components/beds/PlantingDetailClient";
 import { PlantLibraryInfo } from "@/components/plants/PlantLibraryInfo";
-import { getPlanting, getHealthLogs } from "@/lib/supabase";
+import { PlantingPhotoGallery } from "@/components/photos/PlantingPhotoGallery";
+import { getPlanting, getHealthLogs, getPlantingPhotos } from "@/lib/supabase";
 import { MONTH_NAMES, PLANTING_STATUS_LABELS, PLANTING_STATUS_CLASSES } from "@/lib/constants";
 import { formatDate, categoryEmoji } from "@/lib/utils";
 import type { Plant } from "@/types";
@@ -56,7 +57,10 @@ export default async function PlantingDetailPage({ params, searchParams }: PageP
 
   if (!planting) notFound();
 
-  const healthLogs = await getHealthLogs(params.id).catch(() => []);
+  const [healthLogs, plantingPhotos] = await Promise.all([
+    getHealthLogs(params.id).catch(() => []),
+    getPlantingPhotos(params.id).catch(() => []),
+  ]);
 
   const plant = planting.plant;
   const bed = planting.bed;
@@ -104,19 +108,13 @@ export default async function PlantingDetailPage({ params, searchParams }: PageP
         }
       />
 
-      {/* Hero image — always rendered; falls back to category emoji */}
-      <div className="w-full h-48 rounded-2xl overflow-hidden mb-6 bg-stone-100 flex items-center justify-center">
-        {planting.photo_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={planting.photo_url}
-            alt={plantName}
-            className="w-full h-full object-cover object-center"
-          />
-        ) : (
-          <span className="text-7xl">{categoryEmoji(plant?.category ?? "vegetable")}</span>
-        )}
-      </div>
+      {/* Photo gallery hero — tappable, shows full gallery behind it */}
+      <PlantingPhotoGallery
+        initialPhotos={plantingPhotos}
+        plantingId={params.id}
+        currentStatus={planting.status}
+        fallbackEmoji={categoryEmoji(plant?.category ?? "vegetable")}
+      />
 
       {/* Plant icon + status badge row */}
       <div className="flex items-center gap-3 mb-6">
