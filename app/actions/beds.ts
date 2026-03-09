@@ -59,7 +59,7 @@ export async function getBedPlantingsForSheetAction(bedId: string) {
   const plantings = await getBedPlantings(bedId);
   return plantings.map((p) => ({
     id: p.id,
-    slot_number: p.slot_number,
+    slot_number: p.row_number,
     custom_plant_name: p.custom_plant_name,
     status: p.status,
     plant: p.plant ? { id: p.plant.id, name: p.plant.name } : null,
