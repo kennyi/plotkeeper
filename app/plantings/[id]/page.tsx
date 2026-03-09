@@ -10,6 +10,7 @@ import type { Plant } from "@/types";
 
 interface PageProps {
   params: { id: string };
+  searchParams: { from?: string };
 }
 
 // ── Calculation helpers (mirrors AddPlantingWizard logic) ──────────────────
@@ -75,7 +76,7 @@ const STATUS_CLASSES: Record<string, string> = {
 
 // ── Page ───────────────────────────────────────────────────────────────────
 
-export default async function PlantingDetailPage({ params }: PageProps) {
+export default async function PlantingDetailPage({ params, searchParams }: PageProps) {
   let planting;
   try {
     planting = await getPlanting(params.id);
@@ -92,6 +93,10 @@ export default async function PlantingDetailPage({ params }: PageProps) {
   const plantName = plant?.name ?? planting.custom_plant_name ?? "Unknown plant";
   const bedName = bed?.name ?? "Unknown bed";
   const bedId = planting.bed_id;
+
+  // Back navigation: use the ?from= param if provided and valid, else default to the bed page
+  const rawFrom = searchParams.from;
+  const from = rawFrom && rawFrom.startsWith("/") ? rawFrom : `/beds/${bedId}`;
 
   // Key dates
   const sowDate = formatDate(planting.seeds_started_date);
@@ -113,6 +118,12 @@ export default async function PlantingDetailPage({ params }: PageProps) {
 
   return (
     <div>
+      <Link
+        href={from}
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
+      >
+        ← Back
+      </Link>
       <Header
         title={plantName}
         description={
@@ -232,6 +243,7 @@ export default async function PlantingDetailPage({ params }: PageProps) {
         bedId={bedId}
         plantingId={params.id}
         healthLogs={healthLogs}
+        from={from}
       />
     </div>
   );

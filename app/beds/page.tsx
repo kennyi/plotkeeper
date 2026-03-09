@@ -111,7 +111,7 @@ async function PlantView() {
           return (
             <Link
               key={p.id}
-              href={`/plantings/${p.id}`}
+              href={`/plantings/${p.id}?from=${encodeURIComponent("/beds?view=plants")}`}
               className="flex items-center gap-3 py-2.5 px-3 border rounded-lg text-sm hover:bg-stone-50 transition-colors"
             >
               <PlantTopDownIcon category={p.plant?.category ?? null} size={28} />

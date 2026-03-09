@@ -68,6 +68,7 @@ interface PlantingDetailClientProps {
   bedId: string;
   plantingId: string;
   healthLogs: PlantingHealthLog[];
+  from: string;
 }
 
 export function PlantingDetailClient({
@@ -75,6 +76,7 @@ export function PlantingDetailClient({
   bedId,
   plantingId,
   healthLogs,
+  from,
 }: PlantingDetailClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -107,7 +109,7 @@ export function PlantingDetailClient({
 
   function handleDelete() {
     startTransition(async () => {
-      await deletePlantingAndRedirectAction(plantingId, bedId);
+      await deletePlantingAndRedirectAction(plantingId, bedId, from);
     });
   }
 
