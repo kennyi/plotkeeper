@@ -53,7 +53,7 @@ export function EntryForm({ beds, plants, action }: EntryFormProps) {
     <form action={action} className="space-y-5">
       {/* Date */}
       <Field label="Date">
-        <Input name="entry_date" type="date" defaultValue={today} required />
+        <Input name="entry_date" type="date" defaultValue={today} required lang="en-IE" />
       </Field>
 
       {/* Type — pill buttons only */}

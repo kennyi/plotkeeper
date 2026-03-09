@@ -301,6 +301,7 @@ When Phase 4 auth is added, ALL functions must accept an optional `userId` param
 - **Dashboard missing "What to Sow This Month" section** — The design spec includes a plant chip section showing what to sow this month, but it isn't implemented.
 - **`deleteBed` soft-deletes, `deletePlanting` hard-deletes** — Inconsistency. Consider making this explicit in naming (`archiveBed` vs `deletePlanting`).
 - **No pagination** — Plant library and journal entries have no pagination. Plant library fetches all plants, journal is capped at 50.
+- **Content backlog — Fruits, Shrubs, Bulbs** — The plant library UI handles these three categories correctly but the database has no pre-seeded plant records for them. This is a data/content task, not a UI task. Needs real plant data entries created in the `plants` table for categories `fruit`, `shrub`, and `bulb`.
 - **No edit on journal entries** — Can only create and delete. Edit flow to be added.
 - **Sidebar frost dates are hardcoded** — Should read from `garden_settings`.
 

@@ -18,4 +18,5 @@ export async function logHealthAction(
 
   await logPlantingHealth({ planting_id: plantingId, health_status, notes, photo_url, logged_at });
   revalidatePath(`/beds/${bedId}`);
+  revalidatePath(`/plantings/${plantingId}`);
 }

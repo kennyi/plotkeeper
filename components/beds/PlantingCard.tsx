@@ -256,25 +256,25 @@ export function PlantingCard({ planting, bedId }: PlantingCardProps) {
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1.5">
                 <label className="text-xs font-medium">Seeds started</label>
-                <input type="date" name="seeds_started_date"
+                <input type="date" lang="en-IE" name="seeds_started_date"
                   defaultValue={planting.seeds_started_date?.slice(0, 10) ?? ""}
                   className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-medium">Planted out</label>
-                <input type="date" name="planted_out_date"
+                <input type="date" lang="en-IE" name="planted_out_date"
                   defaultValue={planting.planted_out_date?.slice(0, 10) ?? ""}
                   className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-medium">Sown outdoors</label>
-                <input type="date" name="sown_outdoors_date"
+                <input type="date" lang="en-IE" name="sown_outdoors_date"
                   defaultValue={planting.sown_outdoors_date?.slice(0, 10) ?? ""}
                   className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-medium">Expected harvest</label>
-                <input type="date" name="expected_harvest_date"
+                <input type="date" lang="en-IE" name="expected_harvest_date"
                   defaultValue={planting.expected_harvest_date?.slice(0, 10) ?? ""}
                   className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
               </div>
@@ -330,6 +330,7 @@ export function PlantingCard({ planting, bedId }: PlantingCardProps) {
               <label className="text-xs font-medium">Date</label>
               <input
                 type="date"
+                lang="en-IE"
                 name="logged_at"
                 defaultValue={new Date().toISOString().slice(0, 10)}
                 className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"

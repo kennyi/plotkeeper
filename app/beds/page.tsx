@@ -2,8 +2,8 @@ import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { BedCard, deriveNextAction } from "@/components/beds/BedCard";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { getBedsOverview, getActivePlantings } from "@/lib/supabase";
+import { getBedsOverview, getAllPlantings } from "@/lib/supabase";
+import { PlantTopDownIcon } from "@/components/beds/PlantTopDownIcon";
 
 const STATUS_LABELS: Record<string, string> = {
   planned:       "Planned",
@@ -12,6 +12,8 @@ const STATUS_LABELS: Record<string, string> = {
   growing:       "Growing",
   ready:         "Ready",
   harvested:     "Harvested",
+  finished:      "Finished",
+  failed:        "Failed",
 };
 
 const STATUS_CLASSES: Record<string, string> = {
@@ -21,6 +23,8 @@ const STATUS_CLASSES: Record<string, string> = {
   growing:       "bg-green-100 text-green-700",
   ready:         "bg-emerald-100 text-emerald-800",
   harvested:     "bg-amber-100 text-amber-700",
+  finished:      "bg-gray-100 text-gray-500",
+  failed:        "bg-red-100 text-red-600",
 };
 
 async function BedList() {
@@ -69,7 +73,7 @@ async function BedList() {
 async function PlantView() {
   let plantings;
   try {
-    plantings = await getActivePlantings();
+    plantings = await getAllPlantings();
   } catch {
     return (
       <div className="text-center py-16 text-muted-foreground">
@@ -81,7 +85,7 @@ async function PlantView() {
   if (plantings.length === 0) {
     return (
       <div className="text-center py-16 text-muted-foreground">
-        <p className="text-lg font-medium">No active plantings</p>
+        <p className="text-lg font-medium">No plants in your garden yet</p>
         <p className="text-sm mt-1 mb-6">Add plants to your beds to see them here.</p>
         <Button asChild>
           <Link href="/beds">Go to beds</Link>
@@ -99,34 +103,25 @@ async function PlantView() {
   return (
     <>
       <p className="text-sm text-muted-foreground mb-4">
-        {plantings.length} active planting{plantings.length !== 1 ? "s" : ""}
+        {plantings.length} planting{plantings.length !== 1 ? "s" : ""}
       </p>
       <div className="space-y-2">
         {sorted.map((p) => {
           const name = p.plant?.name ?? p.custom_plant_name ?? "Unknown plant";
-          const plantHref = p.plant_id ? `/plants/${p.plant_id}` : null;
           return (
-            <div key={p.id} className="flex items-center gap-3 py-2.5 px-3 border rounded-lg text-sm">
+            <Link
+              key={p.id}
+              href={`/plantings/${p.id}`}
+              className="flex items-center gap-3 py-2.5 px-3 border rounded-lg text-sm hover:bg-stone-50 transition-colors"
+            >
+              <PlantTopDownIcon category={p.plant?.category ?? null} size={28} />
               <div className="flex-1 min-w-0">
-                {plantHref ? (
-                  <Link href={plantHref} className="font-medium hover:underline">{name}</Link>
-                ) : (
-                  <span className="font-medium">{name}</span>
-                )}
-                {p.row_label && (
-                  <span className="text-muted-foreground ml-2">· {p.row_label}</span>
-                )}
+                <span className="font-medium">{name}</span>
               </div>
-              <Link
-                href={`/beds/${p.bed_id}`}
-                className="text-xs text-muted-foreground hover:text-foreground shrink-0 hidden sm:block"
-              >
-                view bed →
-              </Link>
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${STATUS_CLASSES[p.status] ?? "bg-gray-100 text-gray-500"}`}>
                 {STATUS_LABELS[p.status] ?? p.status}
               </span>
-            </div>
+            </Link>
           );
         })}
       </div>
@@ -144,12 +139,18 @@ export default function BedsPage({ searchParams }: BedsPageProps) {
   return (
     <div>
       <Header
-        title="Garden Beds"
-        description="Manage your beds, pots, and planters"
+        title="Inventory"
+        description="Beds, pots, and everything growing"
         action={
-          <Button asChild size="sm">
-            <Link href="/beds/new">Add bed</Link>
-          </Button>
+          view === "plants" ? (
+            <Button asChild size="sm">
+              <Link href="/plants/new">Add plant</Link>
+            </Button>
+          ) : (
+            <Button asChild size="sm">
+              <Link href="/beds/new">Add bed</Link>
+            </Button>
+          )
         }
       />
 

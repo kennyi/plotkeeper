@@ -49,6 +49,14 @@ export async function updatePlantingStatusAction(
 ) {
   await updatePlantingStatus(plantingId, status);
   revalidatePath(`/beds/${bedId}`);
+  revalidatePath(`/plantings/${plantingId}`);
+}
+
+/** Deletes a planting and redirects to its bed — used from the planting detail page. */
+export async function deletePlantingAndRedirectAction(plantingId: string, bedId: string) {
+  await deletePlanting(plantingId);
+  revalidatePath(`/beds/${bedId}`);
+  redirect(`/beds/${bedId}`);
 }
 
 export async function deletePlantingAction(bedId: string, plantingId: string) {

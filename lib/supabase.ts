@@ -268,6 +268,29 @@ export async function getActivePlantings(): Promise<BedPlanting[]> {
   return data as BedPlanting[];
 }
 
+/** Returns ALL plantings regardless of status — for the inventory plants view. */
+export async function getAllPlantings(): Promise<BedPlanting[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("bed_plantings")
+    .select("*, plant:plants(*)")
+    .order("created_at");
+  if (error) throw error;
+  return data as BedPlanting[];
+}
+
+/** Fetches a single planting with plant and bed joins. */
+export async function getPlanting(id: string): Promise<BedPlanting & { bed: GardenBed | null }> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("bed_plantings")
+    .select("*, plant:plants(*), bed:garden_beds(*)")
+    .eq("id", id)
+    .single();
+  if (error) throw error;
+  return data as BedPlanting & { bed: GardenBed | null };
+}
+
 export async function getBed(id: string) {
   const supabase = createClient();
   const { data, error } = await supabase
