@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { Plant } from "@/types";
 
-const CUSTOM_PLANT_VALUE = CUSTOM_PLANT_VALUE;
+const CUSTOM_PLANT_VALUE = "__custom__";
 
 interface PlantingFormProps {
   bedId: string;
