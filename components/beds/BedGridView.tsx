@@ -45,7 +45,7 @@ export function BedGridView({ bed, plantings }: BedGridViewProps) {
   function handleSlotTap(slotIndex: number) {
     const existing = slotMap.get(slotIndex);
     if (existing) {
-      router.push(`/plantings/${existing.id}`);
+      router.push(`/plantings/${existing.id}?from=${encodeURIComponent(`/beds/${bed.id}`)}`);
     } else {
       router.push(`/beds/${bed.id}/plantings/new?slot=${slotIndex}`);
     }
