@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createPlant, updatePlant } from "@/lib/supabase";
+import { createPlant, updatePlant, deletePlant } from "@/lib/supabase";
 import type { Plant } from "@/types";
 
 // Parse a comma-separated string into a trimmed string array, dropping empties.
@@ -146,4 +146,10 @@ export async function updatePlantAction(id: string, formData: FormData): Promise
   revalidatePath("/plants");
   revalidatePath(`/plants/${id}`);
   redirect(`/plants/${id}?saved=1`);
+}
+
+export async function deletePlantAction(plantId: string): Promise<void> {
+  await deletePlant(plantId);
+  revalidatePath("/plants");
+  redirect("/plants");
 }
