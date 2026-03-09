@@ -8,6 +8,8 @@ import type {
   JournalEntry,
   AppFeedback,
   PlantingHealthLog,
+  PlantingPhoto,
+  BedPhoto,
   HealthStatus,
 } from "@/types";
 
@@ -706,4 +708,126 @@ export async function getHealthLogs(plantingId: string): Promise<PlantingHealthL
 
   if (error) throw error;
   return data as PlantingHealthLog[];
+}
+
+// ── Planting Photos ───────────────────────────────────────────────────────────
+
+export async function getPlantingPhotos(plantingId: string): Promise<PlantingPhoto[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("planting_photos")
+    .select("*")
+    .eq("planting_id", plantingId)
+    .order("taken_at", { ascending: true })
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return data as PlantingPhoto[];
+}
+
+export async function addPlantingPhoto(values: {
+  planting_id: string;
+  photo_url: string;
+  storage_path: string | null;
+  taken_at: string;
+  plant_status: string | null;
+}): Promise<PlantingPhoto> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data, error } = await supabase
+    .from("planting_photos")
+    .insert({ ...values, user_id: user?.id ?? null })
+    .select()
+    .single();
+  if (error) throw error;
+  return data as PlantingPhoto;
+}
+
+export async function deletePlantingPhoto(photoId: string): Promise<string | null> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("planting_photos")
+    .delete()
+    .eq("id", photoId)
+    .select("storage_path")
+    .single();
+  if (error) throw error;
+  return (data as { storage_path: string | null }).storage_path;
+}
+
+export async function updatePlantingProfilePhoto(plantingId: string, photoUrl: string | null): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("bed_plantings")
+    .update({ photo_url: photoUrl, updated_at: new Date().toISOString() })
+    .eq("id", plantingId);
+  if (error) throw error;
+}
+
+// ── Bed Photos ────────────────────────────────────────────────────────────────
+
+export async function getBedPhotos(bedId: string): Promise<BedPhoto[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("bed_photos")
+    .select("*")
+    .eq("bed_id", bedId)
+    .order("taken_at", { ascending: true })
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return data as BedPhoto[];
+}
+
+export async function addBedPhoto(values: {
+  bed_id: string;
+  photo_url: string;
+  storage_path: string | null;
+  taken_at: string;
+}): Promise<BedPhoto> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data, error } = await supabase
+    .from("bed_photos")
+    .insert({ ...values, user_id: user?.id ?? null })
+    .select()
+    .single();
+  if (error) throw error;
+  return data as BedPhoto;
+}
+
+export async function deleteBedPhoto(photoId: string): Promise<string | null> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("bed_photos")
+    .delete()
+    .eq("id", photoId)
+    .select("storage_path")
+    .single();
+  if (error) throw error;
+  return (data as { storage_path: string | null }).storage_path;
+}
+
+export async function updateBedProfilePhoto(bedId: string, photoUrl: string | null): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("garden_beds")
+    .update({ photo_url: photoUrl, updated_at: new Date().toISOString() })
+    .eq("id", bedId);
+  if (error) throw error;
+}
+
+// ── Storage upload helper ─────────────────────────────────────────────────────
+
+export async function uploadToStorage(
+  bucket: string,
+  path: string,
+  file: File
+): Promise<string> {
+  const supabase = createClient();
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const { error } = await supabase.storage
+    .from(bucket)
+    .upload(path, buffer, { contentType: file.type, upsert: false });
+  if (error) throw error;
+  const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(path);
+  return publicUrl;
 }

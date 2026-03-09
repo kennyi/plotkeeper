@@ -4,10 +4,11 @@ import { notFound } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { SavedToast } from "@/components/ui/SavedToast";
-import { getBed, getBedPlantings } from "@/lib/supabase";
+import { getBed, getBedPlantings, getBedPhotos } from "@/lib/supabase";
 import { deleteBedAction } from "@/app/actions/beds";
 import { PlantingCard } from "@/components/beds/PlantingCard";
 import { BedGridView } from "@/components/beds/BedGridView";
+import { BedPhotoAvatar } from "@/components/photos/BedPhotoAvatar";
 import type { GardenBed, BedPlanting } from "@/types";
 
 // Crop history grouped by year
@@ -79,9 +80,10 @@ interface BedDetailPageProps {
 }
 
 export default async function BedDetailPage({ params }: BedDetailPageProps) {
-  const [bed, plantings] = await Promise.all([
+  const [bed, plantings, bedPhotos] = await Promise.all([
     getBed(params.id).catch(() => null),
     getBedPlantings(params.id).catch(() => []),
+    getBedPhotos(params.id).catch(() => []),
   ]);
 
   if (!bed) notFound();
@@ -98,6 +100,10 @@ export default async function BedDetailPage({ params }: BedDetailPageProps) {
   return (
     <div>
       <Suspense><SavedToast message="Bed saved" /></Suspense>
+
+      {/* Photo avatar — circular profile photo with gallery */}
+      <BedPhotoAvatar initialPhotos={bedPhotos} bedId={params.id} />
+
       <Header
         title={bed.name}
         description={BED_TYPE_LABELS[bed.bed_type]}

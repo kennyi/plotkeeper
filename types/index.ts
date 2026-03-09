@@ -145,6 +145,27 @@ export interface PlantingHealthLog {
   created_at: string;
 }
 
+export interface PlantingPhoto {
+  id: string;
+  planting_id: string;
+  user_id: string | null;
+  photo_url: string;
+  storage_path: string | null;
+  taken_at: string;
+  plant_status: string | null;
+  created_at: string;
+}
+
+export interface BedPhoto {
+  id: string;
+  bed_id: string;
+  user_id: string | null;
+  photo_url: string;
+  storage_path: string | null;
+  taken_at: string;
+  created_at: string;
+}
+
 export interface MonthlyJob {
   id: string;
   user_id: string;
