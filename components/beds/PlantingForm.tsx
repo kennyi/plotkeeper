@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { Plant } from "@/types";
 
+const CUSTOM_PLANT_VALUE = CUSTOM_PLANT_VALUE;
+
 interface PlantingFormProps {
   bedId: string;
   plants: Pick<Plant, "id" | "name" | "category">[];
@@ -50,7 +52,7 @@ export function PlantingForm({ bedId, plants, action }: PlantingFormProps) {
 
   function handlePlantSelect(e: React.ChangeEvent<HTMLSelectElement>) {
     const val = e.target.value;
-    if (val === "__custom__") {
+    if (val === CUSTOM_PLANT_VALUE) {
       setIsCustom(true);
       setSelectedPlant(null);
     } else {
@@ -81,7 +83,7 @@ export function PlantingForm({ bedId, plants, action }: PlantingFormProps) {
               </optgroup>
             ))}
             <optgroup label="Other">
-              <option value="__custom__">Custom / not in library…</option>
+              <option value={CUSTOM_PLANT_VALUE}>Custom / not in library…</option>
             </optgroup>
           </select>
         </Field>

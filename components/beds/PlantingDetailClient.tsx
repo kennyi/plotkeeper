@@ -10,6 +10,8 @@ import {
 } from "@/app/actions/plantings";
 import { logHealthAction } from "@/app/actions/health";
 import { toast } from "sonner";
+import { PLANTING_STATUS_LABELS } from "@/lib/constants";
+import { formatDate } from "@/lib/utils";
 import type { BedPlanting, HealthStatus, PlantingHealthLog } from "@/types";
 
 type Status = BedPlanting["status"];
@@ -22,17 +24,6 @@ const STATUS_FLOW: Status[] = [
   "ready",
   "harvested",
 ];
-
-const STATUS_LABELS: Record<Status, string> = {
-  planned:       "Planned",
-  seeds_started: "Seeds Started",
-  germinating:   "Germinating",
-  growing:       "Growing",
-  ready:         "Ready",
-  harvested:     "Harvested",
-  finished:      "Finished",
-  failed:        "Failed",
-};
 
 const STATUS_COLORS: Record<Status, string> = {
   planned:       "bg-slate-100 text-slate-700 border-slate-200",
@@ -53,15 +44,6 @@ const HEALTH_OPTIONS: { value: HealthStatus; label: string; color: string }[] = 
   { value: "critical",   label: "Critical",   color: "bg-red-500" },
   { value: "dormant",    label: "Dormant",    color: "bg-stone-400" },
 ];
-
-function formatDate(iso: string | null) {
-  if (!iso) return null;
-  return new Date(iso).toLocaleDateString("en-IE", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
 
 interface PlantingDetailClientProps {
   planting: BedPlanting;
@@ -90,7 +72,7 @@ export function PlantingDetailClient({
   function handleStatusChange(status: Status) {
     startTransition(async () => {
       await updatePlantingStatusAction(bedId, plantingId, status);
-      toast.success(`Marked as ${STATUS_LABELS[status]}`);
+      toast.success(`Marked as ${PLANTING_STATUS_LABELS[status]}`);
       router.refresh();
     });
   }
@@ -122,7 +104,7 @@ export function PlantingDetailClient({
         </h2>
         {isEdgeStatus ? (
           <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium border ${STATUS_COLORS[planting.status]}`}>
-            {STATUS_LABELS[planting.status]}
+            {PLANTING_STATUS_LABELS[planting.status]}
           </span>
         ) : (
           <div className="flex overflow-x-auto gap-1 pb-1">
@@ -144,7 +126,7 @@ export function PlantingDetailClient({
                   ].join(" ")}
                 >
                   {isCurrent && <span className="mr-1">●</span>}
-                  {STATUS_LABELS[s]}
+                  {PLANTING_STATUS_LABELS[s]}
                 </button>
               );
             })}

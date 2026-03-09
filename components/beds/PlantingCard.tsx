@@ -1,35 +1,8 @@
 import Link from "next/link";
 import { PlantHealthBadge } from "@/components/beds/PlantHealthBadge";
+import { PLANTING_STATUS_LABELS, PLANTING_STATUS_CLASSES } from "@/lib/constants";
+import { formatDate } from "@/lib/utils";
 import type { BedPlanting } from "@/types";
-
-type Status = BedPlanting["status"];
-
-const STATUS_CLASSES: Record<Status, string> = {
-  planned:       "bg-slate-100 text-slate-700",
-  seeds_started: "bg-blue-100 text-blue-700",
-  germinating:   "bg-teal-100 text-teal-700",
-  growing:       "bg-green-100 text-green-700",
-  ready:         "bg-emerald-100 text-emerald-800",
-  harvested:     "bg-amber-100 text-amber-700",
-  finished:      "bg-gray-100 text-gray-500",
-  failed:        "bg-red-100 text-red-700",
-};
-
-const STATUS_LABELS: Record<Status, string> = {
-  planned:       "Planned",
-  seeds_started: "Seeds Started",
-  germinating:   "Germinating",
-  growing:       "Growing",
-  ready:         "Ready to Harvest",
-  harvested:     "Harvested",
-  finished:      "Finished",
-  failed:        "Failed",
-};
-
-function formatDate(iso: string | null) {
-  if (!iso) return null;
-  return new Date(iso).toLocaleDateString("en-IE", { day: "numeric", month: "short" });
-}
 
 interface PlantingCardProps {
   planting: BedPlanting;
@@ -40,10 +13,10 @@ export function PlantingCard({ planting, bedId }: PlantingCardProps) {
   const plantName = planting.plant?.name ?? planting.custom_plant_name ?? "Unknown plant";
 
   const dates = [
-    planting.seeds_started_date    && `Sown indoors ${formatDate(planting.seeds_started_date)}`,
-    planting.sown_outdoors_date    && `Sown outdoors ${formatDate(planting.sown_outdoors_date)}`,
-    planting.planted_out_date      && `Planted out ${formatDate(planting.planted_out_date)}`,
-    planting.expected_harvest_date && `Harvest from ${formatDate(planting.expected_harvest_date)}`,
+    planting.seeds_started_date    && `Sown indoors ${formatDate(planting.seeds_started_date, false)}`,
+    planting.sown_outdoors_date    && `Sown outdoors ${formatDate(planting.sown_outdoors_date, false)}`,
+    planting.planted_out_date      && `Planted out ${formatDate(planting.planted_out_date, false)}`,
+    planting.expected_harvest_date && `Harvest from ${formatDate(planting.expected_harvest_date, false)}`,
   ].filter(Boolean);
 
   return (
@@ -72,8 +45,8 @@ export function PlantingCard({ planting, bedId }: PlantingCardProps) {
             )}
           </div>
           <div className="flex flex-col items-end gap-1 shrink-0">
-            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_CLASSES[planting.status]}`}>
-              {STATUS_LABELS[planting.status]}
+            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${PLANTING_STATUS_CLASSES[planting.status]}`}>
+              {PLANTING_STATUS_LABELS[planting.status]}
             </span>
             {planting.current_health && (
               <PlantHealthBadge status={planting.current_health} />

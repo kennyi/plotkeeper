@@ -38,14 +38,12 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default async function PlantDetailPage({ params, searchParams }: PlantDetailPageProps) {
-  let plant;
-  try {
-    plant = await getPlant(params.id);
-  } catch {
-    notFound();
-  }
+  const [plant, beds] = await Promise.all([
+    getPlant(params.id).catch(() => null),
+    getBeds().catch(() => []),
+  ]);
 
-  const beds = await getBeds().catch(() => []);
+  if (!plant) notFound();
   const bedSummaries = beds.map((b) => ({
     id:       b.id,
     name:     b.name,

@@ -41,6 +41,15 @@ export function currentMonth(): number {
   return new Date().getMonth() + 1; // 1-indexed
 }
 
+export function formatDate(iso: string | null, includeYear = true): string | null {
+  if (!iso) return null;
+  return new Date(iso).toLocaleDateString("en-IE", {
+    day: "numeric",
+    month: "short",
+    ...(includeYear ? { year: "numeric" } : {}),
+  });
+}
+
 export function slugRiskColour(risk: string | null): string {
   switch (risk) {
     case "high": return "text-red-600";

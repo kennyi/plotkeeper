@@ -79,14 +79,12 @@ interface BedDetailPageProps {
 }
 
 export default async function BedDetailPage({ params }: BedDetailPageProps) {
-  let bed;
-  try {
-    bed = await getBed(params.id);
-  } catch {
-    notFound();
-  }
+  const [bed, plantings] = await Promise.all([
+    getBed(params.id).catch(() => null),
+    getBedPlantings(params.id).catch(() => []),
+  ]);
 
-  const plantings = await getBedPlantings(params.id).catch(() => []);
+  if (!bed) notFound();
 
   const activePlantings = plantings.filter(
     (p) => p.status !== "finished" && p.status !== "failed"

@@ -36,7 +36,7 @@ export function BedCard({ bed, nextAction }: BedCardProps) {
               </span>
             </div>
           ) : (
-            <div className="mt-3 h-6" /> /* spacer to keep card heights consistent */
+            <div className="mt-3 h-6" /> /* spacer */
           )}
         </div>
       </div>

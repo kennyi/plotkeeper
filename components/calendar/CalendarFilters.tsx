@@ -1,14 +1,15 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { PLANT_CATEGORIES } from "@/lib/constants";
+
+const CALENDAR_CATEGORY_VALUES = new Set(["vegetable", "flower", "herb", "fruit", "perennial"]);
 
 const CATEGORIES = [
   { value: "", label: "All" },
-  { value: "vegetable", label: "Vegetables" },
-  { value: "flower", label: "Flowers" },
-  { value: "herb", label: "Herbs" },
-  { value: "fruit", label: "Fruit" },
-  { value: "perennial", label: "Perennials" },
+  ...PLANT_CATEGORIES
+    .filter((c) => CALENDAR_CATEGORY_VALUES.has(c.value))
+    .map(({ value, label }) => ({ value, label })),
 ];
 
 export function CalendarFilters() {

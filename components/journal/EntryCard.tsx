@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { deleteJournalEntryAction } from "@/app/actions/journal";
+import { formatDate } from "@/lib/utils";
 import type { JournalEntry } from "@/types";
 
 type EntryWithRefs = JournalEntry & {
@@ -21,13 +22,6 @@ const TYPE_CONFIG: Record<
   purchase: { label: "Purchase", classes: "bg-purple-100 text-purple-700" },
 };
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-IE", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
 
 interface EntryCardProps {
   entry: EntryWithRefs;

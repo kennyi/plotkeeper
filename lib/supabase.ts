@@ -113,8 +113,7 @@ export async function getMyPlants(options?: { search?: string; category?: string
     .neq("status", "failed");
   if (pErr) throw pErr;
 
-  const allIds = (plantings ?? []).map((p: { plant_id: string }) => p.plant_id);
-  const plantIds = allIds.filter((id, i) => allIds.indexOf(id) === i);
+  const plantIds = Array.from(new Set((plantings ?? []).map((p: { plant_id: string }) => p.plant_id)));
   if (plantIds.length === 0) return [];
 
   let query = supabase.from("plants").select("*").in("id", plantIds).order("name");
@@ -137,8 +136,7 @@ export async function getMyPlantsForMonth(month: number): Promise<Plant[]> {
     .not("plant_id", "is", null);
   if (pErr) throw pErr;
 
-  const allIds = (plantings ?? []).map((p: { plant_id: string }) => p.plant_id);
-  const plantIds = allIds.filter((id, i) => allIds.indexOf(id) === i);
+  const plantIds = Array.from(new Set((plantings ?? []).map((p: { plant_id: string }) => p.plant_id)));
   if (plantIds.length === 0) return [];
 
   const { data, error } = await supabase
