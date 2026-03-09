@@ -36,7 +36,7 @@ export function PlantingCard({ planting, bedId }: PlantingCardProps) {
                 className="w-full h-full object-cover object-center"
               />
             ) : (
-              <span className="text-lg">{categoryEmoji(planting.plant?.category ?? null)}</span>
+              <span className="text-lg">{categoryEmoji(planting.plant?.category ?? "vegetable")}</span>
             )}
           </div>
 
