@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createBed, updateBed, deleteBed } from "@/lib/supabase";
+import { createBed, updateBed, deleteBed, getBedPlantings } from "@/lib/supabase";
 import type { GardenBed } from "@/types";
 
 type BedFormValues = Omit<GardenBed, "id" | "user_id" | "created_at" | "updated_at">;
@@ -42,7 +42,7 @@ export async function createBedAction(formData: FormData) {
 }
 
 export async function updateBedAction(id: string, formData: FormData) {
-  const values = parseBedForm(formData);
+  const { length_m: _l, width_m: _w, depth_m: _d, ...values } = parseBedForm(formData);
   await updateBed(id, values);
   revalidatePath("/beds");
   revalidatePath(`/beds/${id}`);
@@ -53,4 +53,15 @@ export async function deleteBedAction(id: string) {
   await deleteBed(id);
   revalidatePath("/beds");
   redirect("/beds");
+}
+
+export async function getBedPlantingsForSheetAction(bedId: string) {
+  const plantings = await getBedPlantings(bedId);
+  return plantings.map((p) => ({
+    id: p.id,
+    slot_number: p.slot_number,
+    custom_plant_name: p.custom_plant_name,
+    status: p.status,
+    plant: p.plant ? { id: p.plant.id, name: p.plant.name } : null,
+  }));
 }

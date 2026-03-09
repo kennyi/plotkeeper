@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { SavedToast } from "@/components/ui/SavedToast";
-import { getBed, getBedPlantings, getPlants } from "@/lib/supabase";
+import { getBed, getBedPlantings } from "@/lib/supabase";
 import { deleteBedAction } from "@/app/actions/beds";
 import { PlantingCard } from "@/components/beds/PlantingCard";
 import { BedGridView } from "@/components/beds/BedGridView";
@@ -86,10 +86,7 @@ export default async function BedDetailPage({ params }: BedDetailPageProps) {
     notFound();
   }
 
-  const [plantings, allPlants] = await Promise.all([
-    getBedPlantings(params.id).catch(() => []),
-    getPlants().catch(() => []),
-  ]);
+  const plantings = await getBedPlantings(params.id).catch(() => []);
 
   const activePlantings = plantings.filter(
     (p) => p.status !== "finished" && p.status !== "failed"
@@ -97,13 +94,6 @@ export default async function BedDetailPage({ params }: BedDetailPageProps) {
   const pastPlantings = plantings.filter(
     (p) => p.status === "finished" || p.status === "failed"
   );
-
-  // Slim down plant data sent to the client component
-  const plantSummaries = allPlants.map((p) => ({
-    id:       p.id,
-    name:     p.name,
-    category: p.category,
-  }));
 
   const deleteBed = deleteBedAction.bind(null, params.id);
 
@@ -193,7 +183,6 @@ export default async function BedDetailPage({ params }: BedDetailPageProps) {
       <BedGridView
         bed={bed}
         plantings={activePlantings}
-        allPlants={plantSummaries}
       />
 
       {/* ── Active plantings list ── */}
