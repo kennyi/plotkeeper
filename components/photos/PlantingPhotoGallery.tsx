@@ -75,8 +75,8 @@ export function PlantingPhotoGallery({
         await uploadPlantingPhotoAction(formData);
         setSheetOpen(false);
         router.refresh();
-      } catch {
-        setUploadError("Upload failed — check that the plant-images storage bucket exists.");
+      } catch (err) {
+        setUploadError(err instanceof Error ? err.message : "Upload failed");
       }
     });
   }
