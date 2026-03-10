@@ -23,7 +23,10 @@ export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t">
+    <nav
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t"
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+    >
       <div className="grid grid-cols-5 h-14">
         {mobileNavItems.map((item) => {
           const Icon = item.icon;

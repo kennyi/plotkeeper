@@ -15,6 +15,7 @@ export type PlantOption = Pick<
   | "id"
   | "name"
   | "category"
+  | "subcategory"
   | "sow_indoors_start"
   | "sow_indoors_end"
   | "sow_outdoors_start"
@@ -29,6 +30,19 @@ export type PlantOption = Pick<
   | "slug_risk"
   | "frost_tender"
 >;
+
+/** Plants that can't be sown from seed, or are typically bought/acquired already growing. */
+function isTypicallyExisting(plant: PlantOption): boolean {
+  if (plant.category === "shrub" || plant.category === "perennial") return true;
+  if (!plant.sow_indoors_start && !plant.sow_outdoors_start) return true;
+  return false;
+}
+
+const EXISTING_STATUS_OPTIONS = [
+  { value: "growing" as const,  label: "Growing" },
+  { value: "ready" as const,    label: "Ready / Flowering" },
+  { value: "planned" as const,  label: "Just acquired — not yet placed" },
+] satisfies { value: import("@/types").BedPlanting["status"]; label: string }[];
 
 export type ExistingSlotPlanting = {
   row_number: number | null;
@@ -363,6 +377,10 @@ export function AddPlantingWizard({
   const [sowDate, setSowDate] = useState("");
   const [plantedOutDate, setPlantedOutDate] = useState("");
   const [quantity, setQuantity] = useState("1");
+  const [mode, setMode] = useState<"sowing" | "existing">(
+    preselectedPlant && isTypicallyExisting(preselectedPlant) ? "existing" : "sowing"
+  );
+  const [existingStatus, setExistingStatus] = useState<"growing" | "ready" | "planned">("growing");
   const [isPending, startTransition] = useTransition();
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -388,10 +406,17 @@ export function AddPlantingWizard({
     const fd = new FormData();
     fd.append("plant_id", selectedPlant.id);
     if (selectedSlot !== null) fd.append("slot_number", String(selectedSlot));
-    if (sowDate) fd.append("sow_date", sowDate);
-    if (plantedOutDate) fd.append("planted_out_date", plantedOutDate);
-    const hDate = calcHarvestDateISO(selectedPlant, sowDate);
-    if (hDate) fd.append("expected_harvest_date", hDate);
+
+    if (mode === "existing") {
+      fd.append("explicit_status", existingStatus);
+      if (plantedOutDate) fd.append("planted_out_date", plantedOutDate);
+    } else {
+      if (sowDate) fd.append("sow_date", sowDate);
+      if (plantedOutDate) fd.append("planted_out_date", plantedOutDate);
+      const hDate = calcHarvestDateISO(selectedPlant, sowDate);
+      if (hDate) fd.append("expected_harvest_date", hDate);
+    }
+
     fd.append("quantity", quantity || "1");
     startTransition(async () => {
       await createPlantingWizardAction(bedId, fd);
@@ -431,6 +456,7 @@ export function AddPlantingWizard({
                 onClick={() => {
                   setSelectedPlant(p);
                   setSearch("");
+                  setMode(isTypicallyExisting(p) ? "existing" : "sowing");
                 }}
                 className={[
                   "w-full flex items-center gap-3 px-4 py-3 text-left border-b last:border-b-0 transition-colors",
@@ -516,13 +542,15 @@ export function AddPlantingWizard({
 
   // ── Step 3: Confirm ──
 
+  const canSow = !!(selectedPlant?.sow_indoors_start || selectedPlant?.sow_outdoors_start);
+
   return (
     <div>
       <StepDots current={3} />
       <h2 className="text-lg font-semibold mb-1">Confirm planting</h2>
 
       {/* Summary pill */}
-      <div className="flex items-center gap-2 mb-5 bg-stone-100 rounded-lg px-3 py-2 text-sm flex-wrap">
+      <div className="flex items-center gap-2 mb-4 bg-stone-100 rounded-lg px-3 py-2 text-sm flex-wrap">
         <PlantTopDownIcon category={selectedPlant!.category} size={22} />
         <span className="font-medium">{selectedPlant!.name}</span>
         <span className="text-stone-300">·</span>
@@ -535,41 +563,101 @@ export function AddPlantingWizard({
         )}
       </div>
 
+      {/* Mode toggle — only shown when the plant could go either way */}
+      <div className="flex rounded-lg border border-stone-200 overflow-hidden mb-5 text-sm">
+        <button
+          onClick={() => setMode("sowing")}
+          className={`flex-1 py-2 px-3 font-medium transition-colors ${
+            mode === "sowing"
+              ? "bg-garden-600 text-white"
+              : "bg-background text-muted-foreground hover:bg-stone-50"
+          }`}
+        >
+          Sowing from seed
+        </button>
+        <button
+          onClick={() => setMode("existing")}
+          className={`flex-1 py-2 px-3 font-medium transition-colors border-l border-stone-200 ${
+            mode === "existing"
+              ? "bg-garden-600 text-white"
+              : "bg-background text-muted-foreground hover:bg-stone-50"
+          }`}
+        >
+          Already growing
+        </button>
+      </div>
+
       <div className="space-y-4 mb-5">
-        {/* Sow date */}
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">
-            Sow date{" "}
-            <span className="text-muted-foreground font-normal">(optional)</span>
-          </label>
-          <Input
-            type="date"
-            value={sowDate}
-            onChange={(e) => setSowDate(e.target.value)}
-            lang="en-IE"
-          />
-          {warning && (
-            <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-              {warning}
-            </p>
-          )}
-        </div>
+        {mode === "sowing" ? (
+          <>
+            {/* Sow date — only relevant when sowing mode */}
+            {canSow && (
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium">
+                  Sow date{" "}
+                  <span className="text-muted-foreground font-normal">(optional)</span>
+                </label>
+                <Input
+                  type="date"
+                  value={sowDate}
+                  onChange={(e) => setSowDate(e.target.value)}
+                  lang="en-IE"
+                />
+                {warning && (
+                  <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                    {warning}
+                  </p>
+                )}
+              </div>
+            )}
 
-        {/* Planted out date */}
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">
-            Planted out date{" "}
-            <span className="text-muted-foreground font-normal">(optional)</span>
-          </label>
-          <Input
-            type="date"
-            value={plantedOutDate}
-            onChange={(e) => setPlantedOutDate(e.target.value)}
-            lang="en-IE"
-          />
-        </div>
+            {/* Planted out date */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">
+                Planted out date{" "}
+                <span className="text-muted-foreground font-normal">(optional)</span>
+              </label>
+              <Input
+                type="date"
+                value={plantedOutDate}
+                onChange={(e) => setPlantedOutDate(e.target.value)}
+                lang="en-IE"
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Current status — existing plant */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Current status</label>
+              <select
+                value={existingStatus}
+                onChange={(e) => setExistingStatus(e.target.value as typeof existingStatus)}
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                {EXISTING_STATUS_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </div>
 
-        {/* Quantity */}
+            {/* Date placed/planted */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">
+                Date placed / planted{" "}
+                <span className="text-muted-foreground font-normal">(optional)</span>
+              </label>
+              <Input
+                type="date"
+                value={plantedOutDate}
+                onChange={(e) => setPlantedOutDate(e.target.value)}
+                lang="en-IE"
+              />
+            </div>
+          </>
+        )}
+
+        {/* Quantity — always shown */}
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Quantity</label>
           <Input
@@ -583,8 +671,8 @@ export function AddPlantingWizard({
         </div>
       </div>
 
-      {/* Calculated preview — always shown once plant is selected */}
-      {hasCalculated && (
+      {/* Calculated preview — sowing mode only */}
+      {mode === "sowing" && hasCalculated && (
         <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 mb-5">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
             Calculated from plant data
@@ -626,11 +714,23 @@ export function AddPlantingWizard({
 
       {/* Status note */}
       <p className="text-xs text-muted-foreground mb-4">
-        Status will be set to{" "}
-        <span className="font-medium text-stone-700">
-          {sowDate ? "Seeds started" : "Planned"}
-        </span>
-        {sowDate ? " — update once germinated." : " — add a sow date to mark it started."}
+        {mode === "sowing" ? (
+          <>
+            Status will be set to{" "}
+            <span className="font-medium text-stone-700">
+              {sowDate ? "Seeds started" : "Planned"}
+            </span>
+            {sowDate ? " — update once germinated." : " — add a sow date to mark it started."}
+          </>
+        ) : (
+          <>
+            Status will be set to{" "}
+            <span className="font-medium text-stone-700">
+              {EXISTING_STATUS_OPTIONS.find((o) => o.value === existingStatus)?.label}
+            </span>
+            {" — "}update health and status as you go.
+          </>
+        )}
       </p>
 
       <div className="flex gap-3">

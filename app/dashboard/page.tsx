@@ -151,14 +151,14 @@ export default async function DashboardPage() {
       )}
 
       {/* ── Stat cards ── */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 mb-8">
         <Link href="/beds">
           <Card className="hover:shadow-md transition-shadow cursor-pointer">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Active beds</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold">{counts.bedCount}</p>
+              <p className="text-2xl font-bold">{counts.bedCount}</p>
               <p className="text-xs text-muted-foreground mt-0.5">garden beds tracked</p>
             </CardContent>
           </Card>
@@ -170,7 +170,7 @@ export default async function DashboardPage() {
               <CardTitle className="text-sm font-medium text-muted-foreground">Active plantings</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold">{counts.activePlantingCount}</p>
+              <p className="text-2xl font-bold">{counts.activePlantingCount}</p>
               <p className="text-xs text-muted-foreground mt-0.5">plants in the ground</p>
             </CardContent>
           </Card>
@@ -182,7 +182,7 @@ export default async function DashboardPage() {
               <CardTitle className="text-sm font-medium text-muted-foreground">Open tasks</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold">{totalTaskCount}</p>
+              <p className="text-2xl font-bold">{totalTaskCount}</p>
               <p className="text-xs text-muted-foreground mt-0.5">need attention</p>
             </CardContent>
           </Card>
@@ -194,7 +194,7 @@ export default async function DashboardPage() {
               <CardTitle className="text-sm font-medium text-muted-foreground">Journal entries</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold">{counts.journalCount}</p>
+              <p className="text-2xl font-bold">{counts.journalCount}</p>
               <p className="text-xs text-muted-foreground mt-0.5">logs recorded</p>
             </CardContent>
           </Card>
