@@ -4,29 +4,49 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MONTH_NAMES, KILDARE } from "@/lib/constants";
 import {
   getDashboardCounts,
-  getMonthlyJobs,
   getSettings,
   getMyPlantsForMonth,
   getBedsWithPlantingCount,
-  getActivePlantings,
+  getActivePlantingsWithBeds,
+  getTaskEvents,
+  getCustomTasks,
 } from "@/lib/supabase";
+import { generateSmartTasks, buildLastEventMap } from "@/lib/tasks";
 import { getWeatherForecast } from "@/lib/weather";
 import { WeatherAlerts } from "@/components/dashboard/WeatherAlerts";
 import { BedCard } from "@/components/beds/BedCard";
+import { TaskItem, CustomTaskItem } from "@/components/tasks/TaskItem";
 
 export default async function DashboardPage() {
-  const month = new Date().getMonth() + 1;
+  const today = new Date();
+  const month = today.getMonth() + 1;
   const monthName = MONTH_NAMES[month - 1];
-  const year = new Date().getFullYear();
 
-  const [counts, jobs, settings, plantsThisMonth, beds, activePlantings] = await Promise.all([
-    getDashboardCounts().catch(() => ({ bedCount: 0, activePlantingCount: 0, journalCount: 0 })),
-    getMonthlyJobs(month).catch(() => []),
-    getSettings().catch(() => ({} as Record<string, string>)),
-    getMyPlantsForMonth(month).catch(() => []),
-    getBedsWithPlantingCount().catch(() => []),
-    getActivePlantings().catch(() => []),
-  ]);
+  const [counts, settings, plantsThisMonth, beds, plantings, customTasks] =
+    await Promise.all([
+      getDashboardCounts().catch(() => ({
+        bedCount: 0,
+        activePlantingCount: 0,
+        journalCount: 0,
+      })),
+      getSettings().catch(() => ({} as Record<string, string>)),
+      getMyPlantsForMonth(month).catch(() => []),
+      getBedsWithPlantingCount().catch(() => []),
+      getActivePlantingsWithBeds().catch(() => []),
+      getCustomTasks().catch(() => []),
+    ]);
+
+  const plantingIds = plantings.map((p) => p.id);
+  const events = await getTaskEvents(plantingIds).catch(() => []);
+  const lastEventMap = buildLastEventMap(events);
+  const allSmartTasks = generateSmartTasks(plantings, lastEventMap, today);
+  // Dashboard shows top 5 overdue / due-today tasks with one-tap completion
+  const dashTasks = allSmartTasks
+    .filter((t) => t.urgency === "overdue" || t.urgency === "due_today")
+    .slice(0, 5);
+  const totalTaskCount =
+    allSmartTasks.filter((t) => t.urgency !== "upcoming").length +
+    customTasks.length;
 
   const ownerName = settings.owner_name || null;
   const locationName = settings.location_name || settings.location || "Kildare";
@@ -35,12 +55,6 @@ export default async function DashboardPage() {
   const profileIncomplete = !settings.owner_name || !settings.latitude;
 
   const weather = await getWeatherForecast(lat, lng).catch(() => null);
-
-  const jobsDoneThisMonth = jobs.filter((j) => j.is_done && j.done_year === year).length;
-  const jobsRemaining = jobs.length - jobsDoneThisMonth;
-  const highPriorityJobs = jobs.filter(
-    (j) => j.priority === "high" && !(j.is_done && j.done_year === year)
-  );
 
   // Sow-this-month split — only user's plants
   const sowIndoors = plantsThisMonth.filter(
@@ -55,34 +69,6 @@ export default async function DashboardPage() {
       month >= p.sow_outdoors_start &&
       month <= (p.sow_outdoors_end ?? p.sow_outdoors_start)
   );
-
-  // Garden action reminders from active plantings + jobs
-  const reminders: { text: string; href: string; icon: string }[] = [];
-
-  // From active plantings
-  for (const p of activePlantings) {
-    const name = p.plant?.name ?? p.custom_plant_name ?? "plant";
-    if (
-      p.status === "seeds_started" &&
-      p.plant?.transplant_start &&
-      month >= p.plant.transplant_start &&
-      month <= (p.plant.transplant_end ?? p.plant.transplant_start)
-    ) {
-      reminders.push({ text: `Harden off your ${name} before planting out`, href: `/beds/${p.bed_id}`, icon: "🪴" });
-    }
-    if (p.status === "growing" && p.plant?.harvest_start === month) {
-      reminders.push({ text: `${name} may be ready to harvest`, href: `/beds/${p.bed_id}`, icon: "🌾" });
-    }
-    if (p.current_health === "critical") {
-      reminders.push({ text: `${name} is marked critical — needs attention`, href: `/beds/${p.bed_id}`, icon: "⚠️" });
-    }
-  }
-
-  // From high-priority jobs by category
-  const jobReminders = highPriorityJobs.slice(0, 3);
-
-  // Today's weather summary
-  const today = weather?.days[0] ?? null;
 
   return (
     <div>
@@ -144,36 +130,23 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* ── Reminders ── */}
-      {(reminders.length > 0 || jobReminders.length > 0) && (
-        <div className="mb-8 space-y-2">
-          <h2 className="text-base font-semibold mb-3">To do now</h2>
-          {reminders.map((r, i) => (
-            <Link
-              key={i}
-              href={r.href}
-              className="flex items-center gap-3 p-3 rounded-lg border hover:shadow-sm transition-shadow"
-            >
-              <span className="text-base shrink-0">{r.icon}</span>
-              <p className="text-sm flex-1">{r.text}</p>
-              <span className="text-xs text-muted-foreground shrink-0">→</span>
+      {/* ── To do today ── */}
+      {(dashTasks.length > 0 || customTasks.length > 0) && (
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold">To do today</h2>
+            <Link href="/tasks" className="text-sm text-muted-foreground hover:underline">
+              All tasks →
             </Link>
-          ))}
-          {jobReminders.map((job) => (
-            <Link
-              key={job.id}
-              href={`/jobs?month=${month}`}
-              className="flex items-center gap-3 p-3 rounded-lg border hover:shadow-sm transition-shadow"
-            >
-              <span className="w-2 h-2 rounded-full bg-red-400 shrink-0 mt-0.5" />
-              <p className="text-sm flex-1">{job.title}</p>
-              {job.category && (
-                <span className="text-xs text-muted-foreground shrink-0 capitalize hidden sm:block">
-                  {job.category.replace(/_/g, " ")}
-                </span>
-              )}
-            </Link>
-          ))}
+          </div>
+          <div className="space-y-2">
+            {dashTasks.map((task) => (
+              <TaskItem key={task.id} task={task} />
+            ))}
+            {customTasks.slice(0, Math.max(0, 5 - dashTasks.length)).map((task) => (
+              <CustomTaskItem key={task.id} task={task} />
+            ))}
+          </div>
         </div>
       )}
 
@@ -203,16 +176,14 @@ export default async function DashboardPage() {
           </Card>
         </Link>
 
-        <Link href={`/jobs?month=${month}`}>
+        <Link href="/tasks">
           <Card className="hover:shadow-md transition-shadow cursor-pointer">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{monthName} jobs</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Open tasks</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold">{jobsRemaining}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                remaining · {jobsDoneThisMonth} done
-              </p>
+              <p className="text-3xl font-bold">{totalTaskCount}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">need attention</p>
             </CardContent>
           </Card>
         </Link>
@@ -291,25 +262,6 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* ── All jobs this month ── */}
-      {highPriorityJobs.length > 3 && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-semibold">More jobs this month</h2>
-            <Link href={`/jobs?month=${month}`} className="text-sm text-muted-foreground hover:underline">
-              All {monthName} jobs →
-            </Link>
-          </div>
-          <div className="space-y-2">
-            {highPriorityJobs.slice(3, 8).map((job) => (
-              <div key={job.id} className="flex items-center gap-3 p-3 border rounded-lg">
-                <span className="w-2 h-2 rounded-full bg-red-400 shrink-0" />
-                <p className="text-sm flex-1">{job.title}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

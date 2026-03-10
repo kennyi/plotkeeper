@@ -70,6 +70,10 @@ export interface Plant {
   common_pests: string[] | null;
   common_diseases: string[] | null;
 
+  // Care frequency (drives smart task reminders)
+  feeding_frequency_days: number | null;
+  pruning_frequency_days: number | null;
+
   // Notes
   notes: string | null;
   growing_tips: string | null;
@@ -214,6 +218,45 @@ export interface AppFeedback {
   page_context: string | null;
   message: string;
   status: "open" | "noted" | "done" | "wontfix";
+  created_at: string;
+}
+
+// ── Smart Tasks ──────────────────────────────────────────────────────────────
+
+/** The type of care event recorded when a task is completed. */
+export type TaskEventType =
+  | "watered"
+  | "fed"
+  | "pruned"
+  | "harvested"
+  | "hardened_off"
+  | "transplanted";
+
+/** One completion event stored in planting_task_events. */
+export interface PlantingTaskEvent {
+  id: string;
+  user_id: string | null;
+  planting_id: string;
+  event_type: TaskEventType;
+  completed_at: string;
+  notes: string | null;
+  created_at: string;
+}
+
+/** A planting with its bed info joined — used by task generation. */
+export type PlantingWithBed = BedPlanting & {
+  bed: { id: string; name: string } | null;
+};
+
+/** A user-added one-off task not tied to a specific planting. */
+export interface CustomTask {
+  id: string;
+  user_id: string;
+  title: string;
+  due_date: string | null;
+  is_done: boolean;
+  done_at: string | null;
+  notes: string | null;
   created_at: string;
 }
 
