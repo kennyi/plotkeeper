@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Circle, CheckCircle2, ChevronRight } from "lucide-react";
+import { Circle, CheckCircle, CaretRight } from "@phosphor-icons/react";
 import { completeTaskAction, completeCustomTaskAction } from "@/app/actions/tasks";
 import type { SmartTask, TaskUrgency } from "@/lib/tasks";
 import type { CustomTask } from "@/types";
@@ -68,7 +68,7 @@ export function TaskItem({ task }: { task: SmartTask }) {
         className="shrink-0 text-linen-400 hover:text-terracotta-500 transition-colors disabled:opacity-50"
         aria-label="Mark done"
       >
-        <Circle className="h-5 w-5" />
+        <Circle size={20} />
       </button>
 
       <div
@@ -90,7 +90,7 @@ export function TaskItem({ task }: { task: SmartTask }) {
         </span>
       )}
 
-      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+      <CaretRight size={14} className="text-muted-foreground shrink-0" />
     </div>
   );
 }
@@ -126,7 +126,7 @@ export function CustomTaskItem({ task }: { task: CustomTask }) {
         className="shrink-0 text-linen-400 hover:text-terracotta-500 transition-colors disabled:opacity-50"
         aria-label="Mark done"
       >
-        <Circle className="h-5 w-5" />
+        <Circle size={20} />
       </button>
 
       <div className="flex-1 min-w-0">

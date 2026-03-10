@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { MONTH_NAMES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -28,13 +28,13 @@ export function MonthSelector({ currentMonth }: MonthSelectorProps) {
       {/* Month nav */}
       <div className="flex items-center gap-2">
         <Button variant="outline" size="icon" onClick={() => goToMonth(prevMonth)}>
-          <ChevronLeft className="h-4 w-4" />
+          <CaretLeft size={16} />
         </Button>
         <h2 className="text-xl font-bold min-w-[140px] text-center">
           {MONTH_NAMES[currentMonth - 1]}
         </h2>
         <Button variant="outline" size="icon" onClick={() => goToMonth(nextMonth)}>
-          <ChevronRight className="h-4 w-4" />
+          <CaretRight size={16} />
         </Button>
       </div>
 
@@ -49,8 +49,8 @@ export function MonthSelector({ currentMonth }: MonthSelectorProps) {
               className={cn(
                 "text-xs py-1.5 px-1 rounded font-medium transition-colors",
                 month === currentMonth
-                  ? "bg-garden-600 text-white"
-                  : "text-muted-foreground hover:bg-muted"
+                  ? "bg-terracotta-500 text-white"
+                  : "text-muted-foreground hover:bg-accent"
               )}
             >
               {name.slice(0, 3)}

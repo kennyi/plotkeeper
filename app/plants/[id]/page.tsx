@@ -6,7 +6,7 @@ import { SavedToast } from "@/components/ui/SavedToast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { categoryEmoji } from "@/lib/utils";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import { AddToBedSheet } from "@/components/beds/AddToBedSheet";
 import { PlantLibraryInfo } from "@/components/plants/PlantLibraryInfo";
 import { DeletePlantButton } from "@/components/plants/DeletePlantButton";
@@ -46,7 +46,7 @@ export default async function PlantDetailPage({ params, searchParams }: PlantDet
       <div className="flex items-center justify-between mb-4">
         <Button variant="ghost" size="sm" asChild className="-ml-2">
           <Link href={backHref}>
-            <ArrowLeft className="h-4 w-4 mr-1" />
+            <ArrowLeft size={16} className="mr-1" />
             {backLabel}
           </Link>
         </Button>

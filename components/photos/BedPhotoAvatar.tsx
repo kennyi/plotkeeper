@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Camera } from "lucide-react";
+import { Camera } from "@phosphor-icons/react";
 import { PhotoLightbox } from "@/components/photos/PhotoLightbox";
 import {
   uploadBedPhotoAction,
@@ -72,7 +72,7 @@ export function BedPhotoAvatar({ initialPhotos, bedId }: BedPhotoAvatarProps) {
         {/* Circular avatar — tap to open gallery */}
         <button
           onClick={() => photos.length > 0 && setLightboxOpen(true)}
-          className="relative w-20 h-20 rounded-full overflow-hidden bg-stone-100 flex-shrink-0 flex items-center justify-center focus:outline-none group border-2 border-white shadow-sm"
+          className="relative w-20 h-20 rounded-full overflow-hidden bg-linen-200 flex-shrink-0 flex items-center justify-center focus:outline-none group border-2 border-white shadow-warm"
           aria-label={photos.length > 0 ? `View ${photos.length} photo${photos.length !== 1 ? "s" : ""}` : "No photos yet"}
         >
           {profilePhoto ? (
@@ -99,7 +99,7 @@ export function BedPhotoAvatar({ initialPhotos, bedId }: BedPhotoAvatarProps) {
           onClick={() => setSheetOpen(true)}
           className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
-          <Camera className="h-3.5 w-3.5" />
+          <Camera size={14} />
           {photos.length === 0 ? "Add photo" : "Add photo"}
         </button>
       </div>
@@ -111,10 +111,10 @@ export function BedPhotoAvatar({ initialPhotos, bedId }: BedPhotoAvatarProps) {
           onClick={() => setSheetOpen(false)}
         >
           <div
-            className="w-full bg-white rounded-t-2xl p-6 space-y-4"
+            className="w-full bg-card rounded-t-2xl p-6 space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="font-semibold text-base">Add photo</h3>
+            <h3 className="font-serif font-semibold text-base">Add photo</h3>
             <form onSubmit={handleUpload} className="space-y-4">
               <input type="hidden" name="bed_id" value={bedId} />
 
@@ -128,7 +128,7 @@ export function BedPhotoAvatar({ initialPhotos, bedId }: BedPhotoAvatarProps) {
                   accept="image/*"
                   capture="environment"
                   required
-                  className="block w-full text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-garden-50 file:text-garden-700"
+                  className="block w-full text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-linen-200 file:text-foreground"
                 />
               </div>
 
@@ -141,7 +141,7 @@ export function BedPhotoAvatar({ initialPhotos, bedId }: BedPhotoAvatarProps) {
                   name="taken_at"
                   defaultValue={today}
                   required
-                  className="block w-full rounded-lg border border-stone-200 px-3 py-2 text-sm"
+                  className="block w-full rounded-lg border border-linen-300 px-3 py-2 text-sm"
                 />
               </div>
 
@@ -153,14 +153,14 @@ export function BedPhotoAvatar({ initialPhotos, bedId }: BedPhotoAvatarProps) {
                 <button
                   type="button"
                   onClick={() => setSheetOpen(false)}
-                  className="flex-1 border border-stone-200 rounded-xl py-2.5 text-sm font-medium"
+                  className="flex-1 border border-linen-300 rounded-xl py-2.5 text-sm font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="flex-1 bg-garden-700 text-white rounded-xl py-2.5 text-sm font-medium disabled:opacity-50"
+                  className="flex-1 bg-terracotta-500 text-white rounded-xl py-2.5 text-sm font-medium disabled:opacity-50 hover:bg-terracotta-600 transition-colors"
                 >
                   {isPending ? "Uploading…" : "Upload"}
                 </button>
