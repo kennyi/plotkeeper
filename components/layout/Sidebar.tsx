@@ -27,18 +27,20 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:flex md:flex-col w-56 lg:w-64 border-r bg-background min-h-screen">
+    <aside className="hidden md:flex md:flex-col w-56 lg:w-64 border-r border-linen-300 bg-card min-h-screen">
       {/* Logo */}
-      <div className="px-6 py-5 border-b">
-        <Link href="/dashboard" className="flex items-center gap-2">
+      <div className="px-6 py-5 border-b border-linen-300">
+        <Link href="/dashboard" className="flex items-center gap-2.5">
           <span className="text-2xl">🌱</span>
-          <span className="font-bold text-lg text-garden-700">PlotKeeper</span>
+          <span className="font-serif font-bold text-xl text-garden-700 tracking-tight">
+            PlotKeeper
+          </span>
         </Link>
-        <p className="text-xs text-muted-foreground mt-0.5">Kildare, Ireland</p>
+        <p className="text-xs text-muted-foreground mt-1">Kildare, Ireland</p>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      <nav className="flex-1 px-3 py-4 space-y-0.5">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive =
@@ -48,20 +50,25 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-garden-100 text-garden-800"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  ? "bg-terracotta-50 text-terracotta-600"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
               )}
             >
-              <Icon className="h-4 w-4 flex-shrink-0" />
+              <Icon
+                className={cn(
+                  "h-4 w-4 flex-shrink-0",
+                  isActive ? "text-terracotta-500" : "text-muted-foreground"
+                )}
+              />
               {item.label}
             </Link>
           );
         })}
       </nav>
 
-      <div className="px-6 py-4 border-t space-y-2">
+      <div className="px-6 py-4 border-t border-linen-300 space-y-2">
         <p className="text-xs text-muted-foreground">Last frost ~Apr 20</p>
         <p className="text-xs text-muted-foreground">First frost ~Oct 30</p>
         <form action={logoutAction} className="pt-1">

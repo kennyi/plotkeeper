@@ -1,51 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    /* Canvas & surfaces */
+    --background: 33 37% 95%;           /* #F7F3EE warm cream */
+    --foreground: 30 27% 9%;            /* near-black warm */
+    --card: 0 0% 100%;                  /* white cards sit on cream canvas */
+    --card-foreground: 30 27% 9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 142 76% 36%;
-    --primary-foreground: 355 100% 97%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 142 76% 36%;
-    --radius: 0.5rem;
-  }
+    --popover-foreground: 30 27% 9%;
 
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 142 76% 36%;
-    --primary-foreground: 355 100% 97%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+    /* Primary action — terracotta */
+    --primary: 21 63% 47%;              /* #C4622D */
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary / muted surfaces */
+    --secondary: 33 26% 91%;            /* warm off-cream */
+    --secondary-foreground: 30 27% 12%;
+    --muted: 33 26% 91%;
+    --muted-foreground: 33 24% 44%;     /* #8B7355 warm grey */
+
+    /* Hover surfaces */
+    --accent: 33 30% 88%;               /* deeper linen for hover states */
+    --accent-foreground: 30 27% 9%;
+
+    /* System */
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 142 76% 36%;
+    --border: 33 34% 86%;               /* #E8DDD0 linen */
+    --input: 33 34% 86%;
+    --ring: 21 63% 47%;                 /* terracotta focus ring */
+    --radius: 1rem;                     /* 16px — no sharp corners */
   }
 }
 
@@ -55,5 +44,9 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }

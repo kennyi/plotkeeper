@@ -16,6 +16,10 @@ const config: Config = {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['"DM Sans"', "ui-sans-serif", "system-ui", "sans-serif"],
+        serif: ['"Playfair Display"', "Georgia", "ui-serif", "serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -50,37 +54,50 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // PlotKeeper brand greens
+        // PlotKeeper deep garden greens — centred on #2D5016
         garden: {
-          50: "#f0fdf4",
-          100: "#dcfce7",
-          200: "#bbf7d0",
-          300: "#86efac",
-          400: "#4ade80",
-          500: "#22c55e",
-          600: "#16a34a",
-          700: "#15803d",
-          800: "#166534",
-          900: "#14532d",
+          50:  "#EFF6E8",
+          100: "#D4E8BE",
+          200: "#B5D694",
+          300: "#8DBD63",
+          400: "#66A036",
+          500: "#4A7D22",
+          600: "#3A6118",
+          700: "#2D5016",
+          800: "#1E380E",
+          900: "#0F1E07",
         },
-        // Earthy terracotta for bed/inventory UI
+        // Earthy terracotta — centred on #C4622D
         terracotta: {
-          50:  "#fdf4f0",
-          100: "#fce4d8",
-          200: "#f9c5ab",
-          300: "#f59f78",
-          400: "#ef7344",
-          500: "#e85420",
-          600: "#c93d11",
-          700: "#a5300e",
-          800: "#852a12",
-          900: "#6d2514",
+          50:  "#FDF3EE",
+          100: "#FADDCC",
+          200: "#F5BB9A",
+          300: "#EE9265",
+          400: "#DC7040",
+          500: "#C4622D",
+          600: "#A4501F",
+          700: "#7E3C16",
+          800: "#5C2B0E",
+          900: "#3A1A08",
+        },
+        // Linen — neutral warm for borders, backgrounds
+        linen: {
+          50:  "#FDFAF7",
+          100: "#F7F3EE",
+          200: "#EEE5D9",
+          300: "#E8DDD0",
+          400: "#D4C5B0",
+          500: "#BEA98E",
         },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      boxShadow: {
+        warm: "0 2px 12px rgba(0,0,0,0.06)",
+        "warm-lg": "0 4px 20px rgba(0,0,0,0.09)",
       },
       keyframes: {
         "accordion-down": {

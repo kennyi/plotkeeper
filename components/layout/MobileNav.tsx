@@ -24,26 +24,40 @@ export function MobileNav() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-linen-300"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
-      <div className="grid grid-cols-5 h-14">
+      <div className="grid grid-cols-5 h-16">
         {mobileNavItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href || pathname?.startsWith(item.href + "/");
+          const isActive =
+            pathname === item.href || pathname?.startsWith(item.href + "/");
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={cn(
-                "flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors",
-                isActive
-                  ? "text-garden-700"
-                  : "text-muted-foreground"
-              )}
+              className="flex flex-col items-center justify-center gap-1 min-h-[44px] transition-colors"
             >
-              <Icon className={cn("h-4 w-4", isActive && "text-garden-700")} />
-              <span className="text-[10px]">{item.label}</span>
+              {/* Terracotta pill indicator above icon */}
+              <div className="relative flex flex-col items-center gap-1">
+                {isActive && (
+                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-terracotta-500" />
+                )}
+                <Icon
+                  className={cn(
+                    "h-5 w-5",
+                    isActive ? "text-terracotta-500" : "text-muted-foreground"
+                  )}
+                />
+                <span
+                  className={cn(
+                    "text-[10px] font-medium",
+                    isActive ? "text-terracotta-600" : "text-muted-foreground"
+                  )}
+                >
+                  {item.label}
+                </span>
+              </div>
             </Link>
           );
         })}
