@@ -133,7 +133,7 @@ export default async function TasksPage() {
             {monthName} — your garden calendar
           </h2>
           <p className="text-xs text-muted-foreground mb-4">
-            Windows for plants you're growing right now
+            Windows for plants you&apos;re growing right now
           </p>
 
           <div className="space-y-4">
