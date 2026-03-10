@@ -107,11 +107,12 @@ export function BedPhotoAvatar({ initialPhotos, bedId }: BedPhotoAvatarProps) {
       {/* Add photo bottom sheet */}
       {sheetOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/40 flex items-end"
+          className="fixed inset-0 z-[60] bg-black/40 flex items-end"
           onClick={() => setSheetOpen(false)}
         >
           <div
             className="w-full bg-card rounded-t-2xl p-6 space-y-4"
+            style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom, 1.5rem))" }}
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="font-serif font-semibold text-base">Add photo</h3>
