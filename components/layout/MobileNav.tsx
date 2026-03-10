@@ -8,7 +8,7 @@ import {
   CheckSquare,
   Leaf,
   Archive,
-  Bug,
+  Settings,
 } from "lucide-react";
 
 const mobileNavItems = [
@@ -16,7 +16,7 @@ const mobileNavItems = [
   { href: "/beds", label: "Inventory", icon: Archive },
   { href: "/plants", label: "Plants", icon: Leaf },
   { href: "/tasks", label: "Tasks", icon: CheckSquare },
-  { href: "/pests", label: "Pests", icon: Bug },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function MobileNav() {

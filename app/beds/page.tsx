@@ -92,7 +92,7 @@ async function PlantView() {
             <Link
               key={p.id}
               href={`/plantings/${p.id}?from=${encodeURIComponent("/beds?view=plants")}`}
-              className="flex items-center gap-3 py-2.5 px-3 border rounded-lg text-sm hover:bg-stone-50 transition-colors"
+              className="flex items-center gap-3 py-2.5 px-3 border border-linen-300 rounded-xl text-sm bg-card hover:bg-accent transition-colors"
             >
               {p.photo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -140,16 +140,16 @@ export default function BedsPage({ searchParams }: BedsPageProps) {
       />
 
       {/* View toggle */}
-      <div className="flex rounded-lg border overflow-hidden text-sm mb-6 w-fit">
+      <div className="flex rounded-xl border border-linen-300 overflow-hidden text-sm mb-6 w-fit bg-linen-100">
         <Link
           href="/beds"
-          className={`px-3 py-1.5 transition-colors ${view === "beds" ? "bg-foreground text-background font-medium" : "text-muted-foreground hover:bg-muted"}`}
+          className={`px-4 py-1.5 transition-colors font-medium ${view === "beds" ? "bg-terracotta-500 text-white" : "text-muted-foreground hover:bg-linen-200"}`}
         >
           Beds
         </Link>
         <Link
           href="/beds?view=plants"
-          className={`px-3 py-1.5 transition-colors ${view === "plants" ? "bg-foreground text-background font-medium" : "text-muted-foreground hover:bg-muted"}`}
+          className={`px-4 py-1.5 transition-colors font-medium ${view === "plants" ? "bg-terracotta-500 text-white" : "text-muted-foreground hover:bg-linen-200"}`}
         >
           Plants
         </Link>

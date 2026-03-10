@@ -93,12 +93,12 @@ export const PLANTING_STATUS_LABELS: Record<PlantingStatus, string> = {
 };
 
 export const PLANTING_STATUS_CLASSES: Record<PlantingStatus, string> = {
-  planned:       "bg-slate-100 text-slate-700",
+  planned:       "bg-linen-200 text-muted-foreground",
   seeds_started: "bg-blue-100 text-blue-700",
-  germinating:   "bg-teal-100 text-teal-700",
-  growing:       "bg-green-100 text-green-700",
-  ready:         "bg-emerald-100 text-emerald-800",
-  harvested:     "bg-amber-100 text-amber-700",
-  finished:      "bg-gray-100 text-gray-500",
+  germinating:   "bg-garden-50 text-garden-600",
+  growing:       "bg-garden-100 text-garden-700",
+  ready:         "bg-garden-200 text-garden-800",
+  harvested:     "bg-terracotta-100 text-terracotta-600",
+  finished:      "bg-linen-200 text-muted-foreground",
   failed:        "bg-red-100 text-red-600",
 };

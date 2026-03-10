@@ -11,14 +11,14 @@ import type { CustomTask } from "@/types";
 
 const URGENCY_BORDER: Record<TaskUrgency, string> = {
   overdue:   "border-red-200 bg-red-50",
-  due_today: "border-amber-200 bg-amber-50",
-  due_soon:  "border-stone-200 bg-background",
-  upcoming:  "border-stone-200 bg-background",
+  due_today: "border-terracotta-200 bg-terracotta-50",
+  due_soon:  "border-linen-300 bg-background",
+  upcoming:  "border-linen-300 bg-background",
 };
 
 const URGENCY_BADGE: Record<TaskUrgency, string | null> = {
-  overdue:   "text-red-600 bg-red-100",
-  due_today: "text-amber-700 bg-amber-100",
+  overdue:   "text-red-700 bg-red-100",
+  due_today: "text-terracotta-700 bg-terracotta-100",
   due_soon:  null,
   upcoming:  null,
 };
@@ -65,7 +65,7 @@ export function TaskItem({ task }: { task: SmartTask }) {
       <button
         onClick={handleComplete}
         disabled={isPending}
-        className="shrink-0 text-stone-300 hover:text-garden-600 transition-colors disabled:opacity-50"
+        className="shrink-0 text-linen-400 hover:text-terracotta-500 transition-colors disabled:opacity-50"
         aria-label="Mark done"
       >
         <Circle className="h-5 w-5" />
@@ -117,13 +117,13 @@ export function CustomTaskItem({ task }: { task: CustomTask }) {
   return (
     <div
       className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
-        isOverdue ? "border-red-200 bg-red-50" : "border-stone-200 bg-background"
+        isOverdue ? "border-red-200 bg-red-50" : "border-linen-300 bg-background"
       }`}
     >
       <button
         onClick={handleComplete}
         disabled={isPending}
-        className="shrink-0 text-stone-300 hover:text-garden-600 transition-colors disabled:opacity-50"
+        className="shrink-0 text-linen-400 hover:text-terracotta-500 transition-colors disabled:opacity-50"
         aria-label="Mark done"
       >
         <Circle className="h-5 w-5" />
