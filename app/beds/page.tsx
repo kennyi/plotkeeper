@@ -94,7 +94,12 @@ async function PlantView() {
               href={`/plantings/${p.id}?from=${encodeURIComponent("/beds?view=plants")}`}
               className="flex items-center gap-3 py-2.5 px-3 border rounded-lg text-sm hover:bg-stone-50 transition-colors"
             >
-              <PlantTopDownIcon category={p.plant?.category ?? null} size={28} />
+              {p.photo_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={p.photo_url} alt={name} className="w-7 h-7 rounded-full object-cover object-center flex-shrink-0" />
+              ) : (
+                <PlantTopDownIcon category={p.plant?.category ?? null} size={28} />
+              )}
               <div className="flex-1 min-w-0">
                 <span className="font-medium">{name}</span>
               </div>
