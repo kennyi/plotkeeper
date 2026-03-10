@@ -12,15 +12,19 @@ interface BedGridViewProps {
 
 const SLOT_PX = 56;
 
+// Bed types that hold a single plant — always render a 1×1 grid
+const SINGLE_SLOT_TYPES: GardenBed["bed_type"][] = ["pot", "grow_bag"];
+
 export function BedGridView({ bed, plantings }: BedGridViewProps) {
   const router = useRouter();
+  const isSingleSlot = SINGLE_SLOT_TYPES.includes(bed.bed_type);
   const lengthM = bed.length_m;
   const widthM  = bed.width_m;
 
   const defaultSlotSize: 25 | 50 = (lengthM ?? 0) > 2 || (widthM ?? 0) > 1.5 ? 50 : 25;
   const [slotSize, setSlotSize] = useState<25 | 50>(defaultSlotSize);
 
-  if (!lengthM || !widthM) {
+  if (!isSingleSlot && !lengthM && !widthM) {
     return (
       <div className="mb-8 rounded-xl border border-dashed border-stone-300 bg-stone-50 px-6 py-10 text-center">
         <p className="text-sm text-muted-foreground">
@@ -30,8 +34,8 @@ export function BedGridView({ bed, plantings }: BedGridViewProps) {
     );
   }
 
-  const cols = Math.max(1, Math.round((lengthM * 100) / slotSize));
-  const rows = Math.max(1, Math.round((widthM  * 100) / slotSize));
+  const cols = isSingleSlot ? 1 : Math.max(1, Math.round(((lengthM ?? 0) * 100) / slotSize));
+  const rows = isSingleSlot ? 1 : Math.max(1, Math.round(((widthM  ?? 0) * 100) / slotSize));
   const totalSlots = cols * rows;
 
   // Build a map of slot index (1-based) → planting
@@ -56,32 +60,36 @@ export function BedGridView({ bed, plantings }: BedGridViewProps) {
       {/* Header row */}
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-semibold">Planting grid</h2>
-        <div className="flex text-xs border border-stone-300 rounded-lg overflow-hidden">
-          <button
-            onClick={() => setSlotSize(25)}
-            className={`px-2.5 py-1.5 transition-colors ${
-              slotSize === 25
-                ? "bg-stone-800 text-white"
-                : "text-stone-600 hover:bg-stone-100"
-            }`}
-          >
-            25 cm
-          </button>
-          <button
-            onClick={() => setSlotSize(50)}
-            className={`px-2.5 py-1.5 transition-colors ${
-              slotSize === 50
-                ? "bg-stone-800 text-white"
-                : "text-stone-600 hover:bg-stone-100"
-            }`}
-          >
-            50 cm
-          </button>
-        </div>
+        {!isSingleSlot && (
+          <div className="flex text-xs border border-stone-300 rounded-lg overflow-hidden">
+            <button
+              onClick={() => setSlotSize(25)}
+              className={`px-2.5 py-1.5 transition-colors ${
+                slotSize === 25
+                  ? "bg-stone-800 text-white"
+                  : "text-stone-600 hover:bg-stone-100"
+              }`}
+            >
+              25 cm
+            </button>
+            <button
+              onClick={() => setSlotSize(50)}
+              className={`px-2.5 py-1.5 transition-colors ${
+                slotSize === 50
+                  ? "bg-stone-800 text-white"
+                  : "text-stone-600 hover:bg-stone-100"
+              }`}
+            >
+              50 cm
+            </button>
+          </div>
+        )}
       </div>
 
       <p className="text-xs text-muted-foreground mb-3">
-        {cols} × {rows} grid &middot; {slotSize} cm slots &middot; Tap a slot to plant or view
+        {isSingleSlot
+          ? "Single slot · Tap to plant or view"
+          : `${cols} × ${rows} grid · ${slotSize} cm slots · Tap a slot to plant or view`}
       </p>
 
       {/* Scrollable grid */}

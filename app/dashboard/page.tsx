@@ -191,15 +191,17 @@ export default async function DashboardPage() {
           </Card>
         </Link>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Active plantings</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{counts.activePlantingCount}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">plants in the ground</p>
-          </CardContent>
-        </Card>
+        <Link href="/beds?view=plants">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Active plantings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{counts.activePlantingCount}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">plants in the ground</p>
+            </CardContent>
+          </Card>
+        </Link>
 
         <Link href={`/jobs?month=${month}`}>
           <Card className="hover:shadow-md transition-shadow cursor-pointer">

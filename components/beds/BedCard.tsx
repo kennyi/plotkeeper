@@ -16,9 +16,20 @@ export function BedCard({ bed, nextAction }: BedCardProps) {
   return (
     <Link href={`/beds/${bed.id}`} className="block group">
       <div className="h-full bg-stone-50 border border-stone-200 rounded-2xl overflow-hidden transition-all duration-150 group-hover:shadow-md group-hover:border-stone-300">
-        {/* Icon area */}
+        {/* Photo or icon */}
         <div className="flex items-center justify-center pt-8 pb-3 px-6">
-          <BedTypeIcon bedType={bed.bed_type} size={72} />
+          {bed.photo_url ? (
+            <div className="w-20 h-20 rounded-full overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={bed.photo_url}
+                alt={bed.name}
+                className="w-full h-full object-cover object-center"
+              />
+            </div>
+          ) : (
+            <BedTypeIcon bedType={bed.bed_type} size={72} />
+          )}
         </div>
 
         {/* Name + section */}

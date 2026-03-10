@@ -266,14 +266,6 @@ export function BedForm({ defaultValues, action, submitLabel, hideDimensions }: 
         />
       </Field>
 
-      {/* Photo */}
-      <PhotoUpload
-        name="photo_url"
-        defaultValue={defaultValues?.photo_url}
-        folder="beds"
-        label="Bed photo (optional)"
-      />
-
       {/* Actions */}
       <div className="flex gap-3 pt-2">
         <Button type="submit">{submitLabel}</Button>

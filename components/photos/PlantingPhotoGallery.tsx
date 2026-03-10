@@ -83,13 +83,13 @@ export function PlantingPhotoGallery({
 
   return (
     <>
-      {/* Hero image area */}
-      <div className="relative mb-6">
+      {/* Circular avatar row — matches bed detail page style */}
+      <div className="flex items-end gap-3 mb-6">
         <button
           onClick={openLightbox}
-          className="w-full h-48 rounded-2xl overflow-hidden bg-stone-100 flex items-center justify-center focus:outline-none"
           disabled={photos.length === 0}
-          aria-label={photos.length > 0 ? "Open photo gallery" : undefined}
+          aria-label={photos.length > 0 ? `View ${photos.length} photo${photos.length !== 1 ? "s" : ""}` : undefined}
+          className="relative w-20 h-20 rounded-full overflow-hidden flex-shrink-0 bg-stone-100 flex items-center justify-center focus:outline-none border-2 border-white shadow-sm"
         >
           {profilePhoto ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -99,21 +99,21 @@ export function PlantingPhotoGallery({
               className="w-full h-full object-cover object-center"
             />
           ) : (
-            <span className="text-7xl">{fallbackEmoji}</span>
+            <span className="text-3xl">{fallbackEmoji}</span>
+          )}
+
+          {/* Photo count overlay */}
+          {photos.length > 1 && (
+            <div className="absolute bottom-0 inset-x-0 bg-black/50 text-white text-[10px] font-medium text-center py-0.5 pointer-events-none">
+              {photos.length} photos
+            </div>
           )}
         </button>
-
-        {/* Photo count badge */}
-        {photos.length > 1 && (
-          <div className="absolute bottom-3 left-3 bg-black/60 text-white text-xs font-medium px-2.5 py-1 rounded-full pointer-events-none">
-            {photos.length} photos
-          </div>
-        )}
 
         {/* Add photo button */}
         <button
           onClick={() => setSheetOpen(true)}
-          className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-black/60 hover:bg-black/80 text-white text-xs font-medium px-2.5 py-1.5 rounded-full transition-colors"
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
           <Camera className="h-3.5 w-3.5" />
           Add photo
