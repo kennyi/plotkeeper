@@ -4,7 +4,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Circle, CheckCircle2, ChevronRight } from "lucide-react";
 import { completeTaskAction, completeCustomTaskAction } from "@/app/actions/tasks";
-import type { SmartTask, CustomTask, TaskUrgency } from "@/lib/tasks";
+import type { SmartTask, TaskUrgency } from "@/lib/tasks";
+import type { CustomTask } from "@/types";
 
 // ── SmartTaskItem ─────────────────────────────────────────────────────────────
 
