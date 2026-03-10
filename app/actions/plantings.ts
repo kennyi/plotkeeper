@@ -125,7 +125,9 @@ export async function createPlantingWizardAction(bedId: string, formData: FormDa
   const expectedHarvestDate = raw("expected_harvest_date") || null;
   const quantity = num("quantity") ?? 1;
 
-  const status: BedPlanting["status"] = sowDate ? "seeds_started" : "planned";
+  // explicit_status is set when adding an already-growing plant (not sowing from seed)
+  const explicitStatus = raw("explicit_status") as BedPlanting["status"] | null;
+  const status: BedPlanting["status"] = explicitStatus ?? (sowDate ? "seeds_started" : "planned");
 
   await createPlanting({
     bed_id: bedId,
