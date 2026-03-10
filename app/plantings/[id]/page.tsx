@@ -6,7 +6,10 @@ import { PlantHealthBadge } from "@/components/beds/PlantHealthBadge";
 import { PlantingDetailClient } from "@/components/beds/PlantingDetailClient";
 import { PlantLibraryInfo } from "@/components/plants/PlantLibraryInfo";
 import { PlantingPhotoGallery } from "@/components/photos/PlantingPhotoGallery";
-import { getPlanting, getHealthLogs, getPlantingPhotos } from "@/lib/supabase";
+import { getPlanting, getHealthLogs, getPlantingPhotos, getTaskEvents } from "@/lib/supabase";
+import { generateSmartTasks, buildLastEventMap } from "@/lib/tasks";
+import { TaskItem } from "@/components/tasks/TaskItem";
+import type { PlantingWithBed } from "@/types";
 import { MONTH_NAMES, PLANTING_STATUS_LABELS, PLANTING_STATUS_CLASSES } from "@/lib/constants";
 import { formatDate, categoryEmoji } from "@/lib/utils";
 import type { Plant } from "@/types";
@@ -57,10 +60,19 @@ export default async function PlantingDetailPage({ params, searchParams }: PageP
 
   if (!planting) notFound();
 
-  const [healthLogs, plantingPhotos] = await Promise.all([
+  const [healthLogs, plantingPhotos, taskEvents] = await Promise.all([
     getHealthLogs(params.id).catch(() => []),
     getPlantingPhotos(params.id).catch(() => []),
+    getTaskEvents([params.id]).catch(() => []),
   ]);
+
+  // Generate smart tasks for just this planting
+  const lastEventMap = buildLastEventMap(taskEvents);
+  const plantingTasks = generateSmartTasks(
+    [planting as unknown as PlantingWithBed],
+    lastEventMap,
+    new Date()
+  );
 
   const plant = planting.plant;
   const bed = planting.bed;
@@ -206,6 +218,20 @@ export default async function PlantingDetailPage({ params, searchParams }: PageP
         <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 mb-6">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Notes</p>
           <p className="text-sm text-stone-700">{planting.notes}</p>
+        </div>
+      )}
+
+      {/* Tasks for this planting */}
+      {plantingTasks.length > 0 && (
+        <div className="mb-6">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+            Tasks
+          </p>
+          <div className="space-y-2">
+            {plantingTasks.map((task) => (
+              <TaskItem key={task.id} task={task} />
+            ))}
+          </div>
         </div>
       )}
 
