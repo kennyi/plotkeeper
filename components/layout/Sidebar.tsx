@@ -5,10 +5,9 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
-  Calendar,
+  CheckSquare,
   Leaf,
   Archive,
-  ClipboardList,
   Bug,
   Settings,
   LogOut,
@@ -19,8 +18,7 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/beds", label: "Inventory", icon: Archive },
   { href: "/plants", label: "Plants", icon: Leaf },
-  { href: "/calendar", label: "Calendar", icon: Calendar },
-  { href: "/jobs", label: "Jobs", icon: ClipboardList },
+  { href: "/tasks", label: "Tasks", icon: CheckSquare },
   { href: "/pests", label: "Pest Guide", icon: Bug },
   { href: "/settings", label: "Settings", icon: Settings },
 ];

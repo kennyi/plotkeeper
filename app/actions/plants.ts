@@ -80,6 +80,9 @@ export async function createPlantAction(formData: FormData): Promise<void> {
     common_pests: parseList(get("common_pests")),
     common_diseases: parseList(get("common_diseases")),
 
+    feeding_frequency_days: num(get("feeding_frequency_days")),
+    pruning_frequency_days: num(get("pruning_frequency_days")),
+
     notes: get("notes") || null,
     growing_tips: get("growing_tips") || null,
     photo_url: get("photo_url") || null,

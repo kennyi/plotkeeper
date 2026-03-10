@@ -11,6 +11,10 @@ import type {
   PlantingPhoto,
   BedPhoto,
   HealthStatus,
+  PlantingTaskEvent,
+  PlantingWithBed,
+  CustomTask,
+  TaskEventType,
 } from "@/types";
 
 // ── Auth helper ──────────────────────────────────────────────────────────────
@@ -812,6 +816,110 @@ export async function updateBedProfilePhoto(bedId: string, photoUrl: string | nu
     .from("garden_beds")
     .update({ photo_url: photoUrl, updated_at: new Date().toISOString() })
     .eq("id", bedId);
+  if (error) throw error;
+}
+
+// ── Smart Tasks ───────────────────────────────────────────────────────────────
+
+/**
+ * Returns active plantings with both plant and bed joined.
+ * Used by the task generation system on the tasks page and dashboard.
+ */
+export async function getActivePlantingsWithBeds(): Promise<PlantingWithBed[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("bed_plantings")
+    .select("*, plant:plants(*), bed:garden_beds(id, name)")
+    .in("status", ["planned", "seeds_started", "germinating", "growing", "ready"])
+    .order("created_at");
+  if (error) throw error;
+  return data as PlantingWithBed[];
+}
+
+/**
+ * Returns task completion events, optionally scoped to specific planting IDs.
+ * Only pulls the last 90 days to keep the payload small.
+ */
+export async function getTaskEvents(
+  plantingIds?: string[]
+): Promise<PlantingTaskEvent[]> {
+  const supabase = createClient();
+  const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+
+  let query = supabase
+    .from("planting_task_events")
+    .select("*")
+    .gte("completed_at", since)
+    .order("completed_at", { ascending: false });
+
+  if (plantingIds && plantingIds.length > 0) {
+    query = query.in("planting_id", plantingIds);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return data as PlantingTaskEvent[];
+}
+
+/** Records a single task completion event. */
+export async function logTaskEvent(values: {
+  planting_id: string;
+  event_type: TaskEventType;
+  notes?: string | null;
+  completed_at?: string;
+}): Promise<void> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { error } = await supabase.from("planting_task_events").insert({
+    planting_id: values.planting_id,
+    event_type: values.event_type,
+    notes: values.notes ?? null,
+    completed_at: values.completed_at ?? new Date().toISOString(),
+    user_id: user?.id ?? null,
+  });
+  if (error) throw error;
+}
+
+/** Returns all incomplete custom tasks, ordered by due date (nulls last). */
+export async function getCustomTasks(): Promise<CustomTask[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("custom_tasks")
+    .select("*")
+    .eq("is_done", false)
+    .order("due_date", { ascending: true, nullsFirst: false })
+    .order("created_at");
+  if (error) throw error;
+  return data as CustomTask[];
+}
+
+export async function createCustomTask(values: {
+  title: string;
+  due_date: string | null;
+  notes: string | null;
+}): Promise<void> {
+  const supabase = createClient();
+  const user_id = await getUserId();
+  const { error } = await supabase
+    .from("custom_tasks")
+    .insert({ ...values, user_id });
+  if (error) throw error;
+}
+
+export async function completeCustomTask(id: string): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("custom_tasks")
+    .update({ is_done: true, done_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteCustomTask(id: string): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.from("custom_tasks").delete().eq("id", id);
   if (error) throw error;
 }
 

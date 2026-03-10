@@ -5,10 +5,9 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
-  Calendar,
+  CheckSquare,
   Leaf,
   Archive,
-  ClipboardList,
   Bug,
 } from "lucide-react";
 
@@ -16,8 +15,7 @@ const mobileNavItems = [
   { href: "/dashboard", label: "Home", icon: LayoutDashboard },
   { href: "/beds", label: "Inventory", icon: Archive },
   { href: "/plants", label: "Plants", icon: Leaf },
-  { href: "/calendar", label: "Calendar", icon: Calendar },
-  { href: "/jobs", label: "Jobs", icon: ClipboardList },
+  { href: "/tasks", label: "Tasks", icon: CheckSquare },
   { href: "/pests", label: "Pests", icon: Bug },
 ];
 
@@ -26,7 +24,7 @@ export function MobileNav() {
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t">
-      <div className="grid grid-cols-6 h-14">
+      <div className="grid grid-cols-5 h-14">
         {mobileNavItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href || pathname?.startsWith(item.href + "/");
