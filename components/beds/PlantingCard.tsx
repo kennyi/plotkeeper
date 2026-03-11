@@ -22,7 +22,7 @@ export function PlantingCard({ planting, bedId }: PlantingCardProps) {
   return (
     <Link
       href={`/plantings/${planting.id}?from=${encodeURIComponent(`/beds/${bedId}`)}`}
-      className="block border border-linen-300 rounded-xl bg-card hover:bg-accent transition-colors"
+      className="block border border-linen-300 rounded-2xl bg-card hover:bg-accent transition-colors"
     >
       <div className="p-4 space-y-2">
         <div className="flex items-start gap-3">

@@ -52,16 +52,16 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
       />
 
       {/* Inventory / All toggle */}
-      <div className="flex rounded-lg border overflow-hidden text-sm mb-5 w-fit">
+      <div className="flex rounded-xl border border-linen-300 overflow-hidden text-sm mb-5 w-fit bg-linen-100">
         <Link
           href={`/jobs?month=${month}`}
-          className={`px-3 py-1.5 transition-colors ${inventoryOnly ? "bg-foreground text-background font-medium" : "text-muted-foreground hover:bg-muted"}`}
+          className={`px-4 py-1.5 transition-colors font-medium ${inventoryOnly ? "bg-terracotta-500 text-white" : "text-muted-foreground hover:bg-linen-200"}`}
         >
           My inventory
         </Link>
         <Link
           href={`/jobs?month=${month}&all=1`}
-          className={`px-3 py-1.5 transition-colors ${!inventoryOnly ? "bg-foreground text-background font-medium" : "text-muted-foreground hover:bg-muted"}`}
+          className={`px-4 py-1.5 transition-colors font-medium ${!inventoryOnly ? "bg-terracotta-500 text-white" : "text-muted-foreground hover:bg-linen-200"}`}
         >
           All jobs
         </Link>
@@ -74,10 +74,10 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
         </Button>
 
         <div className="text-center">
-          <h2 className="text-xl font-semibold">
+          <h2 className="font-serif text-xl font-semibold">
             {MONTH_NAMES[month - 1]}
             {isCurrentMonth && (
-              <span className="ml-2 text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+              <span className="ml-2 text-xs font-normal text-muted-foreground bg-linen-200 border border-linen-300 px-2 py-0.5 rounded-full">
                 current
               </span>
             )}
@@ -102,12 +102,12 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
             <Link
               key={m}
               href={`/jobs?month=${m}${!inventoryOnly ? "&all=1" : ""}`}
-              className={`text-xs px-2 py-1 rounded transition-colors ${
+              className={`text-xs px-2 py-1 rounded-md transition-colors ${
                 m === month
-                  ? "bg-foreground text-background font-medium"
+                  ? "bg-terracotta-500 text-white font-medium"
                   : m === currentMonth
-                  ? "bg-muted text-foreground font-medium"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  ? "bg-linen-200 text-stone-700 font-medium border border-linen-300"
+                  : "text-muted-foreground hover:text-foreground hover:bg-linen-100"
               }`}
             >
               {name.slice(0, 3)}

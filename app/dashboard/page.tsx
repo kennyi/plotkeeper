@@ -97,8 +97,8 @@ export default async function DashboardPage() {
               return (
                 <div
                   key={day.date}
-                  className={`rounded-lg p-3 text-center border ${
-                    isToday ? "bg-linen-100 border-linen-400" : "bg-background border-linen-300"
+                  className={`rounded-xl p-3 text-center border ${
+                    isToday ? "bg-linen-100 border-linen-400 shadow-warm" : "bg-card border-linen-300"
                   }`}
                 >
                   <p className="text-xs text-muted-foreground font-medium">
@@ -134,7 +134,7 @@ export default async function DashboardPage() {
       {(dashTasks.length > 0 || customTasks.length > 0) && (
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-semibold">To do today</h2>
+            <h2 className="font-serif text-base font-semibold">To do today</h2>
             <Link href="/tasks" className="text-sm text-muted-foreground hover:underline">
               All tasks →
             </Link>
@@ -153,7 +153,7 @@ export default async function DashboardPage() {
       {/* ── Stat cards ── */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 mb-8">
         <Link href="/beds">
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+          <Card className="hover:shadow-warm-lg transition-shadow cursor-pointer">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Active beds</CardTitle>
             </CardHeader>
@@ -165,7 +165,7 @@ export default async function DashboardPage() {
         </Link>
 
         <Link href="/beds?view=plants">
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+          <Card className="hover:shadow-warm-lg transition-shadow cursor-pointer">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Active plantings</CardTitle>
             </CardHeader>
@@ -177,7 +177,7 @@ export default async function DashboardPage() {
         </Link>
 
         <Link href="/tasks">
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+          <Card className="hover:shadow-warm-lg transition-shadow cursor-pointer">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Open tasks</CardTitle>
             </CardHeader>
@@ -189,7 +189,7 @@ export default async function DashboardPage() {
         </Link>
 
         <Link href="/journal">
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+          <Card className="hover:shadow-warm-lg transition-shadow cursor-pointer">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Journal entries</CardTitle>
             </CardHeader>
@@ -205,7 +205,7 @@ export default async function DashboardPage() {
       {(sowIndoors.length > 0 || sowOutdoors.length > 0) && (
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-semibold">Sow in {monthName}</h2>
+            <h2 className="font-serif text-base font-semibold">Sow in {monthName}</h2>
             <Link href={`/calendar?month=${month}`} className="text-sm text-muted-foreground hover:underline">
               Full calendar →
             </Link>
@@ -249,7 +249,7 @@ export default async function DashboardPage() {
       {beds.length > 0 && (
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-semibold">Your beds</h2>
+            <h2 className="font-serif text-base font-semibold">Your beds</h2>
             <Link href="/beds" className="text-sm text-muted-foreground hover:underline">
               All beds →
             </Link>
