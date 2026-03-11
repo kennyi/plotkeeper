@@ -3,7 +3,7 @@
 import { useState, useRef, useTransition } from "react";
 import { usePathname } from "next/navigation";
 import { createFeedbackAction } from "@/app/actions/feedback";
-import { MessageSquarePlus, X } from "lucide-react";
+import { ChatCircleDots, X } from "@phosphor-icons/react";
 
 const TYPES = [
   { value: "bug", label: "Bug" },
@@ -55,7 +55,7 @@ export function FeedbackButton() {
                 className="text-muted-foreground hover:text-foreground"
                 aria-label="Close"
               >
-                <X className="h-4 w-4" />
+                <X size={16} />
               </button>
             </div>
 
@@ -75,7 +75,7 @@ export function FeedbackButton() {
                         defaultChecked={t.value === "observation"}
                         className="sr-only peer"
                       />
-                      <span className="text-xs px-2.5 py-1 rounded-full border peer-checked:bg-garden-100 peer-checked:border-garden-400 peer-checked:text-garden-800 text-muted-foreground transition-colors">
+                      <span className="text-xs px-2.5 py-1 rounded-full border peer-checked:bg-terracotta-50 peer-checked:border-terracotta-400 peer-checked:text-terracotta-700 text-muted-foreground transition-colors">
                         {t.label}
                       </span>
                     </label>
@@ -87,13 +87,13 @@ export function FeedbackButton() {
                   required
                   rows={3}
                   placeholder="What's on your mind?"
-                  className="w-full text-sm border rounded-md px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-garden-400 placeholder:text-muted-foreground"
+                  className="w-full text-sm border rounded-md px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-terracotta-400 placeholder:text-muted-foreground"
                 />
 
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="w-full text-sm bg-garden-700 text-white rounded-md py-2 font-medium hover:bg-garden-800 disabled:opacity-50 transition-colors"
+                  className="w-full text-sm bg-terracotta-500 text-white rounded-md py-2 font-medium hover:bg-terracotta-600 disabled:opacity-50 transition-colors"
                 >
                   {isPending ? "Saving…" : "Send feedback"}
                 </button>
@@ -103,10 +103,10 @@ export function FeedbackButton() {
         ) : (
           <button
             onClick={() => setOpen(true)}
-            className="flex items-center gap-2 bg-garden-700 text-white text-xs font-medium px-3 py-2 rounded-full shadow-md hover:bg-garden-800 transition-colors"
+            className="flex items-center gap-2 bg-terracotta-500 text-white text-xs font-medium px-3 py-2 rounded-full shadow-md hover:bg-terracotta-600 transition-colors"
             aria-label="Leave feedback"
           >
-            <MessageSquarePlus className="h-4 w-4" />
+            <ChatCircleDots size={16} />
             <span className="hidden sm:inline">Feedback</span>
           </button>
         )}

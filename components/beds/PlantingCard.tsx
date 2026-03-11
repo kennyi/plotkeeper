@@ -22,12 +22,12 @@ export function PlantingCard({ planting, bedId }: PlantingCardProps) {
   return (
     <Link
       href={`/plantings/${planting.id}?from=${encodeURIComponent(`/beds/${bedId}`)}`}
-      className="block border rounded-lg hover:bg-stone-50 transition-colors"
+      className="block border border-linen-300 rounded-xl bg-card hover:bg-accent transition-colors"
     >
       <div className="p-4 space-y-2">
         <div className="flex items-start gap-3">
           {/* Circle thumbnail */}
-          <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-stone-100 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-linen-200 flex items-center justify-center">
             {planting.photo_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img

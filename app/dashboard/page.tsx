@@ -79,9 +79,9 @@ export default async function DashboardPage() {
 
       {/* Setup prompt */}
       {profileIncomplete && (
-        <div className="mb-6 flex items-center justify-between gap-4 rounded-lg border border-garden-200 bg-garden-50 px-4 py-3 text-sm text-garden-800">
+        <div className="mb-6 flex items-center justify-between gap-4 rounded-xl border border-linen-300 bg-linen-100 px-4 py-3 text-sm text-foreground">
           <p>Set your name and location in Settings to personalise your dashboard and weather.</p>
-          <Link href="/settings" className="shrink-0 font-medium underline underline-offset-2 hover:text-garden-900">
+          <Link href="/settings" className="shrink-0 font-medium underline underline-offset-2 hover:text-terracotta-600">
             Go to Settings →
           </Link>
         </div>
@@ -98,7 +98,7 @@ export default async function DashboardPage() {
                 <div
                   key={day.date}
                   className={`rounded-lg p-3 text-center border ${
-                    isToday ? "bg-garden-50 border-garden-200" : "bg-background"
+                    isToday ? "bg-linen-100 border-linen-400" : "bg-background border-linen-300"
                   }`}
                 >
                   <p className="text-xs text-muted-foreground font-medium">
@@ -218,7 +218,7 @@ export default async function DashboardPage() {
                   <Link
                     key={p.id}
                     href={`/plants/${p.id}`}
-                    className="text-xs px-3 py-1 rounded-full bg-amber-100 text-amber-800 hover:bg-amber-200 transition-colors"
+                    className="text-xs px-3 py-1 rounded-full bg-terracotta-100 text-terracotta-700 hover:bg-terracotta-200 transition-colors"
                   >
                     {p.name}
                   </Link>
@@ -234,7 +234,7 @@ export default async function DashboardPage() {
                   <Link
                     key={p.id}
                     href={`/plants/${p.id}`}
-                    className="text-xs px-3 py-1 rounded-full bg-green-100 text-green-800 hover:bg-green-200 transition-colors"
+                    className="text-xs px-3 py-1 rounded-full bg-garden-100 text-garden-700 hover:bg-garden-200 transition-colors"
                   >
                     {p.name}
                   </Link>

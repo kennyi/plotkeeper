@@ -23,7 +23,7 @@ export function PlantCard({ plant }: PlantCardProps) {
         <CardContent className="p-4">
           <div className="flex items-start gap-3 mb-3">
             {/* Circle thumbnail — image or emoji placeholder */}
-            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-stone-100 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-linen-200 flex items-center justify-center">
               {plant.photo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img

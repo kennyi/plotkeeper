@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { Plus } from "lucide-react";
+import { Plus } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createCustomTaskAction } from "@/app/actions/tasks";
@@ -25,7 +25,7 @@ export function AddCustomTaskForm() {
         onClick={() => setOpen(true)}
         className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
       >
-        <Plus className="h-4 w-4" />
+        <Plus size={16} />
         Add a one-off task
       </button>
     );
@@ -35,7 +35,7 @@ export function AddCustomTaskForm() {
     <form
       ref={formRef}
       action={handleSubmit}
-      className="space-y-3 rounded-lg border border-stone-200 p-4 bg-stone-50"
+      className="space-y-3 rounded-xl border border-linen-300 p-4 bg-linen-100"
     >
       <Input
         name="title"

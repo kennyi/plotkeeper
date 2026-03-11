@@ -4,23 +4,23 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
-  LayoutDashboard,
+  SquaresFour,
   CheckSquare,
   Leaf,
   Archive,
   Bug,
-  Settings,
-  LogOut,
-} from "lucide-react";
+  Gear,
+  SignOut,
+} from "@phosphor-icons/react";
 import { logoutAction } from "@/app/actions/auth";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Dashboard", icon: SquaresFour },
   { href: "/beds", label: "Inventory", icon: Archive },
   { href: "/plants", label: "Plants", icon: Leaf },
   { href: "/tasks", label: "Tasks", icon: CheckSquare },
   { href: "/pests", label: "Pest Guide", icon: Bug },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/settings", label: "Settings", icon: Gear },
 ];
 
 export function Sidebar() {
@@ -57,8 +57,10 @@ export function Sidebar() {
               )}
             >
               <Icon
+                size={16}
+                weight={isActive ? "bold" : "regular"}
                 className={cn(
-                  "h-4 w-4 flex-shrink-0",
+                  "flex-shrink-0",
                   isActive ? "text-terracotta-500" : "text-muted-foreground"
                 )}
               />
@@ -76,7 +78,7 @@ export function Sidebar() {
             type="submit"
             className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
-            <LogOut className="h-3 w-3" />
+            <SignOut size={12} />
             Sign out
           </button>
         </form>

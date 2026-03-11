@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/button";
 import { getPlant } from "@/lib/supabase";
 import { EditPlantForm } from "@/components/plants/EditPlantForm";
@@ -22,7 +22,7 @@ export default async function EditPlantPage({ params }: EditPlantPageProps) {
       <div className="flex items-center justify-between mb-6">
         <Button variant="ghost" size="sm" asChild className="-ml-2">
           <Link href={`/plants/${plant.id}`}>
-            <ArrowLeft className="h-4 w-4 mr-1" />
+            <ArrowLeft size={16} className="mr-1" />
             Back to plant
           </Link>
         </Button>

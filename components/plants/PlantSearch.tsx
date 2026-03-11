@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X } from "lucide-react";
+import { MagnifyingGlass, X } from "@phosphor-icons/react";
 import { PLANT_CATEGORIES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -46,7 +46,7 @@ export function PlantSearch() {
     <div className="space-y-4">
       {/* Text search */}
       <form onSubmit={handleSearch} className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <MagnifyingGlass size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -59,7 +59,7 @@ export function PlantSearch() {
             onClick={clearSearch}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
           >
-            <X className="h-4 w-4" />
+            <X size={16} />
           </button>
         )}
       </form>
@@ -79,9 +79,7 @@ export function PlantSearch() {
             variant={currentCategory === cat.value ? "default" : "outline"}
             size="sm"
             onClick={() => updateParams({ category: cat.value })}
-            className={cn(
-              currentCategory === cat.value && "bg-garden-600 hover:bg-garden-700"
-            )}
+            className={cn(currentCategory === cat.value && "")}
           >
             {cat.emoji} {cat.label}
           </Button>

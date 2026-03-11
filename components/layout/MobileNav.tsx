@@ -4,19 +4,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
-  LayoutDashboard,
+  SquaresFour,
   CheckSquare,
   Leaf,
   Archive,
-  Bug,
-} from "lucide-react";
+  Gear,
+} from "@phosphor-icons/react";
 
 const mobileNavItems = [
-  { href: "/dashboard", label: "Home", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Home", icon: SquaresFour },
   { href: "/beds", label: "Inventory", icon: Archive },
   { href: "/plants", label: "Plants", icon: Leaf },
   { href: "/tasks", label: "Tasks", icon: CheckSquare },
-  { href: "/pests", label: "Pests", icon: Bug },
+  { href: "/settings", label: "Settings", icon: Gear },
 ];
 
 export function MobileNav() {
@@ -38,14 +38,14 @@ export function MobileNav() {
               href={item.href}
               className="flex flex-col items-center justify-center gap-1 min-h-[44px] transition-colors"
             >
-              {/* Terracotta pill indicator above icon */}
               <div className="relative flex flex-col items-center gap-1">
                 {isActive && (
                   <span className="absolute -top-2 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-terracotta-500" />
                 )}
                 <Icon
+                  size={20}
+                  weight={isActive ? "bold" : "regular"}
                   className={cn(
-                    "h-5 w-5",
                     isActive ? "text-terracotta-500" : "text-muted-foreground"
                   )}
                 />

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { X, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Trash, CaretLeft, CaretRight } from "@phosphor-icons/react";
 
 export interface LightboxPhoto {
   id: string;
@@ -111,7 +111,7 @@ export function PhotoLightbox({
           className="text-white/70 hover:text-white p-1 rounded-full"
           aria-label="Close"
         >
-          <X className="h-6 w-6" />
+          <X size={24} />
         </button>
       </div>
 
@@ -124,7 +124,7 @@ export function PhotoLightbox({
             className="absolute left-4 hidden md:flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
             aria-label="Previous photo"
           >
-            <ChevronLeft className="h-6 w-6" />
+            <CaretLeft size={24} />
           </button>
         )}
 
@@ -143,7 +143,7 @@ export function PhotoLightbox({
             className="absolute right-4 hidden md:flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
             aria-label="Next photo"
           >
-            <ChevronRight className="h-6 w-6" />
+            <CaretRight size={24} />
           </button>
         )}
       </div>
@@ -178,7 +178,7 @@ export function PhotoLightbox({
             }`}
             aria-label="Delete photo"
           >
-            <Trash2 className="h-5 w-5" />
+            <Trash size={20} />
           </button>
         </div>
       </div>
