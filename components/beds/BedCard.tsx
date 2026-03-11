@@ -65,7 +65,7 @@ export function deriveNextAction(statuses: string[]): NextAction | null {
   if (statuses.includes("germinating"))
     return { label: "Ready to plant out", colorClass: "bg-garden-100 text-garden-700" };
   if (statuses.includes("seeds_started"))
-    return { label: "Harden off soon",    colorClass: "bg-blue-100 text-blue-700" };
+    return { label: "Harden off soon",    colorClass: "bg-terracotta-50 text-terracotta-700" };
   if (statuses.includes("growing"))
     return { label: "Growing well",       colorClass: "bg-garden-50 text-garden-600" };
   if (statuses.includes("planned"))

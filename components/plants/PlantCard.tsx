@@ -19,7 +19,7 @@ export function PlantCard({ plant }: PlantCardProps) {
 
   return (
     <Link href={`/plants/${plant.id}`}>
-      <Card className="h-full hover:shadow-md transition-shadow cursor-pointer hover:border-garden-300">
+      <Card className="h-full hover:shadow-warm-lg transition-shadow cursor-pointer hover:border-garden-300">
         <CardContent className="p-4">
           <div className="flex items-start gap-3 mb-3">
             {/* Circle thumbnail — image or emoji placeholder */}

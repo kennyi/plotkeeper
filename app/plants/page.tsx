@@ -85,16 +85,16 @@ export default function PlantLibraryPage({ searchParams }: PlantLibraryPageProps
       />
 
       {/* My plants / All plants toggle */}
-      <div className="flex rounded-lg border overflow-hidden text-sm mb-4 w-fit">
+      <div className="flex rounded-xl border border-linen-300 overflow-hidden text-sm mb-4 w-fit bg-linen-100">
         <Link
           href={`/plants?${baseParams}`}
-          className={`px-3 py-1.5 transition-colors ${mineOnly ? "bg-foreground text-background font-medium" : "text-muted-foreground hover:bg-muted"}`}
+          className={`px-4 py-1.5 transition-colors font-medium ${mineOnly ? "bg-terracotta-500 text-white" : "text-muted-foreground hover:bg-linen-200"}`}
         >
           My plants
         </Link>
         <Link
           href={`/plants?all=1${baseParams}`}
-          className={`px-3 py-1.5 transition-colors ${!mineOnly ? "bg-foreground text-background font-medium" : "text-muted-foreground hover:bg-muted"}`}
+          className={`px-4 py-1.5 transition-colors font-medium ${!mineOnly ? "bg-terracotta-500 text-white" : "text-muted-foreground hover:bg-linen-200"}`}
         >
           All plants
         </Link>
@@ -110,7 +110,7 @@ export default function PlantLibraryPage({ searchParams }: PlantLibraryPageProps
         fallback={
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-40 rounded-lg bg-muted animate-pulse" />
+              <div key={i} className="h-48 rounded-2xl bg-linen-200 animate-pulse" />
             ))}
           </div>
         }
