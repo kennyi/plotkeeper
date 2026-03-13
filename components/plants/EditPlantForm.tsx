@@ -117,10 +117,19 @@ export function EditPlantForm({ plant }: { plant: Plant }) {
               <Input name="weeks_indoors_max" type="number" min="0" placeholder="Max" defaultValue={plant.weeks_indoors_max ?? ""} />
             </div>
           </Field>
+          <Field label="Hardening off (days)">
+            <Input name="hardening_off_days" type="number" min="0" placeholder="e.g. 7" defaultValue={plant.hardening_off_days ?? ""} />
+          </Field>
           <Field label="Germination days (min / max)">
             <div className="flex gap-2">
               <Input name="germination_days_min" type="number" min="0" placeholder="Min" defaultValue={plant.germination_days_min ?? ""} />
               <Input name="germination_days_max" type="number" min="0" placeholder="Max" defaultValue={plant.germination_days_max ?? ""} />
+            </div>
+          </Field>
+          <Field label="Germination temp °C (min / max)">
+            <div className="flex gap-2">
+              <Input name="germination_temp_min" type="number" placeholder="Min" defaultValue={plant.germination_temp_min ?? ""} />
+              <Input name="germination_temp_max" type="number" placeholder="Max" defaultValue={plant.germination_temp_max ?? ""} />
             </div>
           </Field>
         </div>
@@ -139,6 +148,12 @@ export function EditPlantForm({ plant }: { plant: Plant }) {
           </Field>
           <Field label="Sowing depth (cm)">
             <Input name="sowing_depth_cm" type="number" min="0" defaultValue={plant.sowing_depth_cm ?? ""} placeholder="e.g. 1" />
+          </Field>
+          <Field label="Height (cm min / max)">
+            <div className="flex gap-1">
+              <Input name="height_cm_min" type="number" min="0" placeholder="Min" defaultValue={plant.height_cm_min ?? ""} />
+              <Input name="height_cm_max" type="number" min="0" placeholder="Max" defaultValue={plant.height_cm_max ?? ""} />
+            </div>
           </Field>
         </div>
 
@@ -198,6 +213,33 @@ export function EditPlantForm({ plant }: { plant: Plant }) {
               {label}
             </label>
           ))}
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Vase life (days)" hint="For cut flowers">
+            <Input name="vase_life_days" type="number" min="0" defaultValue={plant.vase_life_days ?? ""} placeholder="e.g. 7" />
+          </Field>
+          <Field label="Succession interval (weeks)">
+            <Input name="succession_interval_weeks" type="number" min="0" defaultValue={plant.succession_interval_weeks ?? ""} placeholder="e.g. 3" />
+          </Field>
+          <Field label="Lifespan (years)" hint="For perennials">
+            <Input name="lifespan_years" type="number" min="0" defaultValue={plant.lifespan_years ?? ""} placeholder="e.g. 5" />
+          </Field>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Prune month" hint="Month number, 1–12">
+            <Input name="prune_month" type="number" min="1" max="12" defaultValue={plant.prune_month ?? ""} placeholder="e.g. 3" />
+          </Field>
+          <Field label="Divide month" hint="Month number, 1–12">
+            <Input name="divide_month" type="number" min="1" max="12" defaultValue={plant.divide_month ?? ""} placeholder="e.g. 9" />
+          </Field>
+          <Field label="Feeding frequency (days)">
+            <Input name="feeding_frequency_days" type="number" min="0" defaultValue={plant.feeding_frequency_days ?? ""} placeholder="e.g. 14" />
+          </Field>
+          <Field label="Pruning frequency (days)">
+            <Input name="pruning_frequency_days" type="number" min="0" defaultValue={plant.pruning_frequency_days ?? ""} placeholder="e.g. 30" />
+          </Field>
         </div>
       </section>
 

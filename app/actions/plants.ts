@@ -121,18 +121,35 @@ export async function updatePlantAction(id: string, formData: FormData): Promise
 
     weeks_indoors_min: num(get("weeks_indoors_min")),
     weeks_indoors_max: num(get("weeks_indoors_max")),
+    hardening_off_days: num(get("hardening_off_days")),
+
+    germination_days_min: num(get("germination_days_min")),
+    germination_days_max: num(get("germination_days_max")),
+    germination_temp_min: num(get("germination_temp_min")),
+    germination_temp_max: num(get("germination_temp_max")),
+
     spacing_cm: num(get("spacing_cm")),
     row_spacing_cm: num(get("row_spacing_cm")),
     sowing_depth_cm: num(get("sowing_depth_cm")),
+    height_cm_min: num(get("height_cm_min")),
+    height_cm_max: num(get("height_cm_max")),
 
     sun_requirement: (get("sun_requirement") || null) as Plant["sun_requirement"],
     water_needs: (get("water_needs") || null) as Plant["water_needs"],
     soil_preference: get("soil_preference") || null,
+
+    hardiness_zone: get("hardiness_zone") || null,
     slug_risk: (get("slug_risk") || null) as Plant["slug_risk"],
     frost_tolerant: bool(get("frost_tolerant")),
     frost_tender: bool(get("frost_tender")),
 
     is_perennial: bool(get("is_perennial")),
+    lifespan_years: num(get("lifespan_years")),
+    prune_month: num(get("prune_month")),
+    divide_month: num(get("divide_month")),
+
+    is_cut_flower: bool(get("is_cut_flower")),
+    vase_life_days: num(get("vase_life_days")),
     succession_sow: bool(get("succession_sow")),
     succession_interval_weeks: num(get("succession_interval_weeks")),
 
@@ -140,6 +157,9 @@ export async function updatePlantAction(id: string, formData: FormData): Promise
     avoid_near: parseList(get("avoid_near")),
     common_pests: parseList(get("common_pests")),
     common_diseases: parseList(get("common_diseases")),
+
+    feeding_frequency_days: num(get("feeding_frequency_days")),
+    pruning_frequency_days: num(get("pruning_frequency_days")),
 
     notes: get("notes") || null,
     growing_tips: get("growing_tips") || null,
