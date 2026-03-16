@@ -2,6 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./e2e",
+  globalSetup: "./e2e/global-setup.ts",
   fullyParallel: true,
   // Fail CI if you accidentally left test.only in source.
   forbidOnly: !!process.env.CI,
