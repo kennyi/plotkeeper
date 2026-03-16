@@ -27,7 +27,7 @@ test.describe("Unauthenticated", () => {
     await page.goto("/auth/login");
     await expect(page.locator('input[name="email"]')).toBeVisible();
     await expect(page.locator('input[name="password"]')).toBeVisible();
-    await expect(page.locator('button[type="submit"]')).toBeVisible();
+    await expect(page.getByRole("button", { name: /sign in/i })).toBeVisible();
   });
 });
 

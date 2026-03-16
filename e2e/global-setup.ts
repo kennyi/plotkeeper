@@ -18,7 +18,7 @@ export default async function globalSetup(config: FullConfig) {
   await page.goto(`${baseURL}/auth/login`);
   await page.fill('input[name="email"]', TEST_EMAIL);
   await page.fill('input[name="password"]', TEST_PASSWORD);
-  await page.click('button[type="submit"]');
+  await page.getByRole("button", { name: /sign in/i }).click();
 
   // Wait for redirect to dashboard after successful login
   await page.waitForURL(`${baseURL}/dashboard`, { timeout: 15_000 });
