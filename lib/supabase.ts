@@ -63,7 +63,15 @@ export async function getPlants(options?: {
 
   const { data, error } = await query;
   if (error) throw error;
-  return data as Plant[];
+
+  // If the user has forked a shared library plant, show only the fork.
+  const plants = data as Plant[];
+  const forkedOriginIds = new Set(
+    plants.filter((p) => p.forked_from).map((p) => p.forked_from!)
+  );
+  return forkedOriginIds.size === 0
+    ? plants
+    : plants.filter((p) => !(p.created_by === null && forkedOriginIds.has(p.id)));
 }
 
 export async function getPlant(id: string) {
@@ -79,7 +87,7 @@ export async function getPlant(id: string) {
 }
 
 export async function createPlant(
-  values: Omit<Plant, "id" | "is_user_created" | "created_by" | "created_at">
+  values: Omit<Plant, "id" | "is_user_created" | "created_by" | "forked_from" | "created_at">
 ): Promise<Plant> {
   const supabase = createClient();
   const user_id = await getUserId();
@@ -92,13 +100,78 @@ export async function createPlant(
   return data as Plant;
 }
 
-export async function updatePlant(
+/**
+ * Fork-on-edit: if the plant is owned by the current user, update it in place.
+ * If it's a shared library plant (created_by = null), create a user-owned copy
+ * with the edits applied and forked_from pointing at the original.
+ * Returns the resulting plant and a flag indicating whether a fork was created.
+ */
+export async function forkOrUpdatePlant(
   id: string,
   values: Partial<Omit<Plant, "id" | "created_at">>
-): Promise<void> {
+): Promise<{ plant: Plant; wasForked: boolean }> {
   const supabase = createClient();
-  const { error } = await supabase.from("plants").update(values).eq("id", id);
+  const user_id = await getUserId();
+
+  const { data: original, error: fetchError } = await supabase
+    .from("plants")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (fetchError) throw fetchError;
+
+  const orig = original as Plant;
+
+  // User already owns this plant — update in place.
+  if (orig.created_by === user_id) {
+    const { data, error } = await supabase
+      .from("plants")
+      .update(values)
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return { plant: data as Plant, wasForked: false };
+  }
+
+  // Check if the user already has a fork of this shared plant.
+  // (They could reach the original URL via a direct link / old bookmark.)
+  const { data: existingFork } = await supabase
+    .from("plants")
+    .select("*")
+    .eq("forked_from", id)
+    .eq("created_by", user_id)
+    .maybeSingle();
+
+  if (existingFork) {
+    const { data, error } = await supabase
+      .from("plants")
+      .update(values)
+      .eq("id", (existingFork as Plant).id)
+      .select()
+      .single();
+    if (error) throw error;
+    return { plant: data as Plant, wasForked: true };
+  }
+
+  // Shared library plant — insert a user-owned fork.
+  // Strip server-managed fields; overlay the user's edits.
+  const { id: _id, created_at: _ca, ...rest } = orig;
+  const forkRow = {
+    ...rest,
+    ...values,
+    is_user_created: true,
+    created_by: user_id,
+    forked_from: id,
+  };
+
+  const { data, error } = await supabase
+    .from("plants")
+    .insert(forkRow)
+    .select()
+    .single();
   if (error) throw error;
+  return { plant: data as Plant, wasForked: true };
 }
 
 /**
@@ -162,9 +235,19 @@ export async function getMyPlantsForMonth(month: number): Promise<Plant[]> {
 
 export async function getPlantsForMonth(month: number, category?: string) {
   const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const userId = user?.id ?? null;
+
   let query = supabase
     .from("plants")
     .select("*")
+    .or(
+      userId
+        ? `is_user_created.eq.false,created_by.eq.${userId}`
+        : `is_user_created.eq.false`
+    )
     .or(
       `and(sow_indoors_start.lte.${month},sow_indoors_end.gte.${month}),` +
         `and(sow_outdoors_start.lte.${month},sow_outdoors_end.gte.${month}),` +
@@ -179,7 +262,14 @@ export async function getPlantsForMonth(month: number, category?: string) {
 
   const { data, error } = await query;
   if (error) throw error;
-  return data as Plant[];
+
+  const plants = data as Plant[];
+  const forkedOriginIds = new Set(
+    plants.filter((p) => p.forked_from).map((p) => p.forked_from!)
+  );
+  return forkedOriginIds.size === 0
+    ? plants
+    : plants.filter((p) => !(p.created_by === null && forkedOriginIds.has(p.id)));
 }
 
 // ── Garden Beds ──────────────────────────────────────────────────────────────

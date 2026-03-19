@@ -81,6 +81,7 @@ export interface Plant {
   // User-created plant fields
   is_user_created: boolean;
   created_by: string | null;
+  forked_from: string | null;
 
   photo_url: string | null;
   created_at: string;

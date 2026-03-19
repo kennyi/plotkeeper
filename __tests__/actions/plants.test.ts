@@ -6,11 +6,11 @@ import { updatePlantAction } from "@/app/actions/plants";
 
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
-vi.mock("@/lib/supabase", () => ({ updatePlant: vi.fn(), createPlant: vi.fn(), deletePlant: vi.fn() }));
+vi.mock("@/lib/supabase", () => ({ forkOrUpdatePlant: vi.fn(), createPlant: vi.fn(), deletePlant: vi.fn() }));
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { updatePlant } from "@/lib/supabase";
+import { forkOrUpdatePlant } from "@/lib/supabase";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -24,14 +24,16 @@ const PLANT_ID = "plant-uuid-123";
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // Default: in-place update (no fork created)
+  (forkOrUpdatePlant as ReturnType<typeof vi.fn>).mockResolvedValue({ plant: { id: PLANT_ID }, wasForked: false });
 });
 
 // ── Core behaviour ─────────────────────────────────────────────────────────────
 
 describe("updatePlantAction — core behaviour", () => {
-  it("calls updatePlant with the plant id", async () => {
+  it("calls forkOrUpdatePlant with the plant id", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.any(Object));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.any(Object));
   });
 
   it("revalidates /plants and /plants/:id", async () => {
@@ -51,27 +53,27 @@ describe("updatePlantAction — core behaviour", () => {
 describe("updatePlantAction — text fields", () => {
   it("passes name trimmed", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "  Courgette  " }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ name: "Courgette" }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ name: "Courgette" }));
   });
 
   it("passes latin_name", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Courgette", latin_name: "Cucurbita pepo" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ latin_name: "Cucurbita pepo" }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ latin_name: "Cucurbita pepo" }));
   });
 
   it("passes null for empty optional text fields", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato", latin_name: "" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ latin_name: null }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ latin_name: null }));
   });
 
   it("passes description", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato", description: "A fruiting vine." }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ description: "A fruiting vine." }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ description: "A fruiting vine." }));
   });
 
   it("passes soil_preference", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato", soil_preference: "Well-drained" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ soil_preference: "Well-drained" }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ soil_preference: "Well-drained" }));
   });
 });
 
@@ -80,27 +82,27 @@ describe("updatePlantAction — text fields", () => {
 describe("updatePlantAction — numeric fields (previously present)", () => {
   it("passes sow_indoors_start and sow_indoors_end", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato", sow_indoors_start: "2", sow_indoors_end: "4" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ sow_indoors_start: 2, sow_indoors_end: 4 }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ sow_indoors_start: 2, sow_indoors_end: 4 }));
   });
 
   it("passes harvest_start and harvest_end", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato", harvest_start: "7", harvest_end: "10" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ harvest_start: 7, harvest_end: 10 }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ harvest_start: 7, harvest_end: 10 }));
   });
 
   it("passes spacing_cm and row_spacing_cm", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato", spacing_cm: "45", row_spacing_cm: "60" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ spacing_cm: 45, row_spacing_cm: 60 }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ spacing_cm: 45, row_spacing_cm: 60 }));
   });
 
   it("passes weeks_indoors_min and weeks_indoors_max", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato", weeks_indoors_min: "6", weeks_indoors_max: "8" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ weeks_indoors_min: 6, weeks_indoors_max: 8 }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ weeks_indoors_min: 6, weeks_indoors_max: 8 }));
   });
 
   it("passes succession_interval_weeks", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Lettuce", succession_interval_weeks: "3" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ succession_interval_weeks: 3 }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ succession_interval_weeks: 3 }));
   });
 });
 
@@ -109,62 +111,62 @@ describe("updatePlantAction — numeric fields (previously present)", () => {
 describe("updatePlantAction — previously missing numeric fields", () => {
   it("passes hardening_off_days", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato", hardening_off_days: "7" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ hardening_off_days: 7 }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ hardening_off_days: 7 }));
   });
 
   it("passes germination_days_min and germination_days_max", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato", germination_days_min: "7", germination_days_max: "14" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ germination_days_min: 7, germination_days_max: 14 }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ germination_days_min: 7, germination_days_max: 14 }));
   });
 
   it("passes germination_temp_min and germination_temp_max", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato", germination_temp_min: "18", germination_temp_max: "25" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ germination_temp_min: 18, germination_temp_max: 25 }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ germination_temp_min: 18, germination_temp_max: 25 }));
   });
 
   it("passes height_cm_min and height_cm_max", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Sunflower", height_cm_min: "150", height_cm_max: "300" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ height_cm_min: 150, height_cm_max: 300 }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ height_cm_min: 150, height_cm_max: 300 }));
   });
 
   it("passes lifespan_years", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Lavender", lifespan_years: "10" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ lifespan_years: 10 }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ lifespan_years: 10 }));
   });
 
   it("passes prune_month", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Lavender", prune_month: "3" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ prune_month: 3 }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ prune_month: 3 }));
   });
 
   it("passes divide_month", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Hosta", divide_month: "9" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ divide_month: 9 }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ divide_month: 9 }));
   });
 
   it("passes vase_life_days", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Sweet Pea", vase_life_days: "5" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ vase_life_days: 5 }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ vase_life_days: 5 }));
   });
 
   it("passes feeding_frequency_days", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato", feeding_frequency_days: "14" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ feeding_frequency_days: 14 }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ feeding_frequency_days: 14 }));
   });
 
   it("passes pruning_frequency_days", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Rose", pruning_frequency_days: "30" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ pruning_frequency_days: 30 }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ pruning_frequency_days: 30 }));
   });
 
   it("passes hardiness_zone", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Lavender", hardiness_zone: "H4" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ hardiness_zone: "H4" }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ hardiness_zone: "H4" }));
   });
 
   it("passes null for hardiness_zone when empty", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Lavender", hardiness_zone: "" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ hardiness_zone: null }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ hardiness_zone: null }));
   });
 });
 
@@ -173,12 +175,12 @@ describe("updatePlantAction — previously missing numeric fields", () => {
 describe("updatePlantAction — previously missing boolean field: is_cut_flower", () => {
   it("passes is_cut_flower as true when checkbox is 'on'", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Sweet Pea", is_cut_flower: "on" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ is_cut_flower: true }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ is_cut_flower: true }));
   });
 
   it("passes is_cut_flower as false when checkbox is absent", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Carrot" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ is_cut_flower: false }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ is_cut_flower: false }));
   });
 });
 
@@ -187,27 +189,27 @@ describe("updatePlantAction — previously missing boolean field: is_cut_flower"
 describe("updatePlantAction — boolean fields (previously present)", () => {
   it("passes frost_tolerant as true when 'on'", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Kale", frost_tolerant: "on" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ frost_tolerant: true }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ frost_tolerant: true }));
   });
 
   it("passes frost_tolerant as false when absent", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Basil" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ frost_tolerant: false }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ frost_tolerant: false }));
   });
 
   it("passes frost_tender as true when 'on'", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Basil", frost_tender: "on" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ frost_tender: true }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ frost_tender: true }));
   });
 
   it("passes is_perennial as true when 'on'", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Lavender", is_perennial: "on" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ is_perennial: true }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ is_perennial: true }));
   });
 
   it("passes succession_sow as true when 'on'", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Lettuce", succession_sow: "on" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ succession_sow: true }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ succession_sow: true }));
   });
 });
 
@@ -216,27 +218,27 @@ describe("updatePlantAction — boolean fields (previously present)", () => {
 describe("updatePlantAction — num() coercion", () => {
   it("coerces a valid integer string to a number", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato", spacing_cm: "30" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ spacing_cm: 30 }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ spacing_cm: 30 }));
   });
 
   it("coerces a valid decimal string to a number", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato", sowing_depth_cm: "0.5" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ sowing_depth_cm: 0.5 }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ sowing_depth_cm: 0.5 }));
   });
 
   it("returns null for an empty string", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato", spacing_cm: "" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ spacing_cm: null }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ spacing_cm: null }));
   });
 
   it("returns null for a non-numeric string", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato", spacing_cm: "abc" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ spacing_cm: null }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ spacing_cm: null }));
   });
 
   it("returns null for a whitespace-only string", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato", spacing_cm: "   " }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ spacing_cm: null }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ spacing_cm: null }));
   });
 });
 
@@ -245,22 +247,22 @@ describe("updatePlantAction — num() coercion", () => {
 describe("updatePlantAction — parseList() coercion", () => {
   it("parses a comma-separated string into an array", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato", companion_plants: "Basil, Marigold, Carrot" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ companion_plants: ["Basil", "Marigold", "Carrot"] }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ companion_plants: ["Basil", "Marigold", "Carrot"] }));
   });
 
   it("trims whitespace from each item", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato", avoid_near: "  Fennel ,  Brassica  " }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ avoid_near: ["Fennel", "Brassica"] }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ avoid_near: ["Fennel", "Brassica"] }));
   });
 
   it("returns null for an empty string", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato", companion_plants: "" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ companion_plants: null }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ companion_plants: null }));
   });
 
   it("returns null for a whitespace-only string", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato", common_pests: "   " }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ common_pests: null }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ common_pests: null }));
   });
 
   it("passes all four list fields: companion_plants, avoid_near, common_pests, common_diseases", async () => {
@@ -271,7 +273,7 @@ describe("updatePlantAction — parseList() coercion", () => {
       common_pests: "Aphids",
       common_diseases: "Blight",
     }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({
       companion_plants: ["Basil"],
       avoid_near: ["Fennel"],
       common_pests: ["Aphids"],
@@ -285,27 +287,27 @@ describe("updatePlantAction — parseList() coercion", () => {
 describe("updatePlantAction — enum fields", () => {
   it("passes sun_requirement", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato", sun_requirement: "full_sun" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ sun_requirement: "full_sun" }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ sun_requirement: "full_sun" }));
   });
 
   it("passes null for empty sun_requirement", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato", sun_requirement: "" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ sun_requirement: null }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ sun_requirement: null }));
   });
 
   it("passes water_needs", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Tomato", water_needs: "medium" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ water_needs: "medium" }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ water_needs: "medium" }));
   });
 
   it("passes slug_risk", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Hosta", slug_risk: "high" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ slug_risk: "high" }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ slug_risk: "high" }));
   });
 
   it("passes category", async () => {
     await updatePlantAction(PLANT_ID, fd({ name: "Lavender", category: "perennial" }));
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ category: "perennial" }));
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, expect.objectContaining({ category: "perennial" }));
   });
 });
 
@@ -357,7 +359,7 @@ describe("updatePlantAction — full field set", () => {
       growing_tips: "Water consistently to avoid blossom end rot.",
     }));
 
-    expect(updatePlant).toHaveBeenCalledWith(PLANT_ID, {
+    expect(forkOrUpdatePlant).toHaveBeenCalledWith(PLANT_ID, {
       name: "Tomato",
       latin_name: "Solanum lycopersicum",
       category: "vegetable",
