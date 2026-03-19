@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createPlant, updatePlant, deletePlant } from "@/lib/supabase";
+import { createPlant, forkOrUpdatePlant, deletePlant } from "@/lib/supabase";
 import type { Plant } from "@/types";
 
 // Parse a comma-separated string into a trimmed string array, dropping empties.
@@ -25,7 +25,7 @@ function bool(raw: string | null): boolean {
 export async function createPlantAction(formData: FormData): Promise<void> {
   const get = (key: string) => formData.get(key) as string | null;
 
-  const values: Omit<Plant, "id" | "is_user_created" | "created_by" | "created_at"> = {
+  const values: Omit<Plant, "id" | "is_user_created" | "created_by" | "forked_from" | "created_at"> = {
     name: (get("name") ?? "").trim(),
     latin_name: get("latin_name") || null,
     category: (get("category") ?? "vegetable") as Plant["category"],
@@ -165,10 +165,11 @@ export async function updatePlantAction(id: string, formData: FormData): Promise
     growing_tips: get("growing_tips") || null,
   };
 
-  await updatePlant(id, values);
+  const { plant, wasForked } = await forkOrUpdatePlant(id, values);
   revalidatePath("/plants");
   revalidatePath(`/plants/${id}`);
-  redirect(`/plants/${id}?saved=1`);
+  if (wasForked) revalidatePath(`/plants/${plant.id}`);
+  redirect(`/plants/${plant.id}?saved=1`);
 }
 
 export async function deletePlantAction(plantId: string): Promise<void> {
