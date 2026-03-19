@@ -325,6 +325,20 @@ All environment variables are also set in the Vercel project settings for produc
 
 ---
 
+## Workflow Rules
+
+### Before every commit
+- Run `npx vitest run` and fix all failures before committing.
+- Never commit with known unit test failures.
+
+### Before every push
+- Run `npm run build` to catch type errors.
+- E2E tests run automatically in CI on push. If you've touched auth flows,
+  navigation, or `e2e/global-setup.ts`, run `npx playwright test` locally first.
+- Never push broken code — fix failures in the same commit before pushing.
+
+---
+
 ## Running Locally
 
 ```bash
