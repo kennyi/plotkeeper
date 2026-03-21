@@ -73,8 +73,10 @@ export function QuickLogWidget({ plantings, lastEventMap }: QuickLogWidgetProps)
         await quickLogAction(selectedPlanting, selectedAction, note.trim() || null);
         setSuccess(true);
         setNote("");
-        setSelectedPlanting(defaultPlantingId(plantings, lastEventMap));
-        setTimeout(() => setSuccess(false), 1500);
+        setTimeout(() => {
+          setSuccess(false);
+          setSelectedPlanting(defaultPlantingId(plantings, lastEventMap));
+        }, 1500);
       } catch {
         setError("Something went wrong. Please try again.");
       }
@@ -130,6 +132,7 @@ export function QuickLogWidget({ plantings, lastEventMap }: QuickLogWidgetProps)
       <select
         value={selectedPlanting}
         onChange={(e) => setSelectedPlanting(e.target.value)}
+        aria-label="Select planting"
         className="w-full mb-3 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-garden-400"
       >
         {plantings.map((p) => (
@@ -146,6 +149,7 @@ export function QuickLogWidget({ plantings, lastEventMap }: QuickLogWidgetProps)
         value={note}
         onChange={(e) => setNote(e.target.value)}
         placeholder="Any notes? (optional)"
+        aria-label="Care note (optional)"
         className="w-full mb-4 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-garden-400"
         onKeyDown={(e) => { if (e.key === "Enter") handleSubmit(); }}
       />
