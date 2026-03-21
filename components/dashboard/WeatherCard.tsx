@@ -18,12 +18,13 @@ const CONDITION_LABELS: Record<WeatherCondition, string> = {
 
 /** Background tint class for the Today card based on condition. */
 function todayBgClass(condition: WeatherCondition): string {
-  if (condition === "clear" || condition === "partly-cloudy") return "bg-linen-100 border-linen-400";
+  if (condition === "clear" || condition === "partly-cloudy") return "bg-linen-200 border-linen-400";
   if (condition === "cloudy" || condition === "fog")          return "bg-stone-100 border-stone-300";
   if (condition === "rain" || condition === "heavy-rain" || condition === "thunderstorm")
                                                               return "bg-blue-50 border-blue-200";
   if (condition === "snow")                                   return "bg-stone-50 border-stone-200";
-  return "bg-linen-100 border-linen-400"; // drizzle / fallback
+  if (condition === "drizzle")                                return "bg-blue-50 border-blue-200";
+  return "bg-linen-200 border-linen-400"; // fallback
 }
 
 // ── Rain particles ─────────────────────────────────────────────────────────
@@ -31,7 +32,7 @@ function todayBgClass(condition: WeatherCondition): string {
 function RainParticles({ heavy = false }: { heavy?: boolean }) {
   const count = heavy ? 16 : 10;
   return (
-    <div className="absolute inset-0 overflow-hidden rounded-xl pointer-events-none" aria-hidden>
+    <div className="absolute inset-0 overflow-hidden rounded-xl pointer-events-none" aria-hidden="true">
       {Array.from({ length: count }).map((_, i) => (
         <span
           key={i}
@@ -53,7 +54,7 @@ function RainParticles({ heavy = false }: { heavy?: boolean }) {
 
 function CloudDrift() {
   return (
-    <div className="absolute inset-0 overflow-hidden rounded-xl pointer-events-none" aria-hidden>
+    <div className="absolute inset-0 overflow-hidden rounded-xl pointer-events-none" aria-hidden="true">
       {[
         { top: "20%", left: "10%", w: 48, delay: "0s" },
         { top: "55%", left: "55%", w: 36, delay: "3s" },
@@ -80,7 +81,7 @@ function CloudDrift() {
 
 function SnowParticles() {
   return (
-    <div className="absolute inset-0 overflow-hidden rounded-xl pointer-events-none" aria-hidden>
+    <div className="absolute inset-0 overflow-hidden rounded-xl pointer-events-none" aria-hidden="true">
       {Array.from({ length: 12 }).map((_, i) => (
         <span
           key={i}
@@ -106,8 +107,22 @@ function GlowOverlay() {
     <div
       className="absolute inset-0 rounded-xl pointer-events-none animate-glow-pulse"
       style={{ background: "radial-gradient(ellipse at 30% 40%, rgba(251,191,36,0.18) 0%, transparent 70%)" }}
-      aria-hidden
+      aria-hidden="true"
     />
+  );
+}
+
+// ── Thunder overlay ────────────────────────────────────────────────────────
+
+function ThunderOverlay() {
+  return (
+    <>
+      <RainParticles heavy />
+      <div
+        className="absolute inset-0 rounded-xl pointer-events-none animate-thunder-flash"
+        aria-hidden="true"
+      />
+    </>
   );
 }
 
@@ -119,14 +134,14 @@ function WeatherOverlay({ condition }: { condition: WeatherCondition }) {
     case "partly-cloudy":return <CloudDrift />;
     case "drizzle":
     case "rain":         return <RainParticles />;
-    case "heavy-rain":
-    case "thunderstorm": return <RainParticles heavy />;
+    case "heavy-rain":   return <RainParticles heavy />;
+    case "thunderstorm": return <ThunderOverlay />;
     case "snow":         return <SnowParticles />;
     case "fog":
       return (
         <div
           className="absolute inset-0 rounded-xl pointer-events-none bg-stone-200 animate-fog-shimmer"
-          aria-hidden
+          aria-hidden="true"
         />
       );
     default:             return null; // cloudy — stillness is the signal
@@ -156,7 +171,7 @@ export function WeatherCard({
   const todayBg = todayBgClass(todayCondition);
 
   // Build frost/zone context line — omit segments with no value
-  const contextParts: string[] = [locationName];
+  const contextParts: string[] = locationName ? [locationName] : [];
   if (hardinessZone)  contextParts.push(`RHS Zone ${hardinessZone}`);
   if (lastFrost)      contextParts.push(`Last frost ~${lastFrost}`);
   if (firstFrost)     contextParts.push(`First frost ~${firstFrost}`);
@@ -165,7 +180,7 @@ export function WeatherCard({
   return (
     <div className="mb-8">
       {/* Forecast strip */}
-      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
         {weather.days.slice(0, 4).map((day, i) => {
           const isToday = i === 0;
           const condition = getWeatherCondition(day.weatherCode);
@@ -185,7 +200,7 @@ export function WeatherCard({
               <p className={`relative text-xs font-medium text-muted-foreground ${isToday ? "mb-1" : ""}`}>
                 {isToday
                   ? "Today"
-                  : new Date(day.date).toLocaleDateString("en-IE", {
+                  : new Date(day.date + "T12:00:00").toLocaleDateString("en-IE", {
                       weekday: "short",
                       day: "numeric",
                     })}
