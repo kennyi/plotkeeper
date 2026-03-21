@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Header } from "@/components/layout/Header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MONTH_NAMES, KILDARE } from "@/lib/constants";
 import {
   getDashboardCounts,
@@ -13,7 +12,9 @@ import {
 } from "@/lib/supabase";
 import { generateSmartTasks, buildLastEventMap } from "@/lib/tasks";
 import { getWeatherForecast } from "@/lib/weather";
+import { WeatherCard } from "@/components/dashboard/WeatherCard";
 import { WeatherAlerts } from "@/components/dashboard/WeatherAlerts";
+import { QuickLogWidget } from "@/components/dashboard/QuickLogWidget";
 import { BedCard } from "@/components/beds/BedCard";
 import { TaskItem, CustomTaskItem } from "@/components/tasks/TaskItem";
 
@@ -48,11 +49,15 @@ export default async function DashboardPage() {
     allSmartTasks.filter((t) => t.urgency !== "upcoming").length +
     customTasks.length;
 
-  const ownerName = settings.owner_name || null;
+  const ownerName    = settings.owner_name || null;
   const locationName = settings.location_name || settings.location || "Kildare";
-  const lat = settings.latitude ? parseFloat(settings.latitude) : KILDARE.latitude;
+  const lat = settings.latitude  ? parseFloat(settings.latitude)  : KILDARE.latitude;
   const lng = settings.longitude ? parseFloat(settings.longitude) : KILDARE.longitude;
   const profileIncomplete = !settings.owner_name || !settings.latitude;
+
+  const hardinessZone = settings.hardiness_zone || undefined;
+  const lastFrost     = settings.last_frost_approx  || undefined;
+  const firstFrost    = settings.first_frost_approx || undefined;
 
   const weather = await getWeatherForecast(lat, lng).catch(() => null);
 
@@ -87,58 +92,37 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* ── Weather — always at top ── */}
+      {/* ── 1. Weather ── */}
       {weather && (
-        <div className="mb-8">
-          {/* Forecast strip */}
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-3">
-            {weather.days.slice(0, 4).map((day, i) => {
-              const isToday = i === 0;
-              return (
-                <div
-                  key={day.date}
-                  className={`rounded-xl p-3 text-center border ${
-                    isToday ? "bg-linen-100 border-linen-400 shadow-warm" : "bg-card border-linen-300"
-                  }`}
-                >
-                  <p className="text-xs text-muted-foreground font-medium">
-                    {isToday
-                      ? "Today"
-                      : new Date(day.date).toLocaleDateString("en-IE", {
-                          weekday: "short",
-                          day: "numeric",
-                        })}
-                  </p>
-                  <p className="text-sm font-semibold mt-1">
-                    {Math.round(day.tempMax)}°<span className="text-muted-foreground font-normal">/{Math.round(day.tempMin)}°</span>
-                  </p>
-                  <p className={`text-xs mt-0.5 ${day.precipitation >= 5 ? "text-blue-600 font-medium" : "text-muted-foreground"}`}>
-                    {day.precipitation > 0 ? `${day.precipitation.toFixed(1)}mm` : "Dry"}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Garden alerts */}
-          {weather.alerts.length > 0 && <WeatherAlerts alerts={weather.alerts} />}
-
-          {/* Zone + context */}
-          <p className="text-xs text-muted-foreground">
-            {locationName} · RHS Zone {settings.hardiness_zone || "H4"} · Last frost ~20 Apr · First frost ~30 Oct
-          </p>
-        </div>
+        <>
+          <WeatherCard
+            weather={weather}
+            locationName={locationName}
+            hardinessZone={hardinessZone}
+            lastFrost={lastFrost}
+            firstFrost={firstFrost}
+          />
+          {weather.alerts.length > 0 && (
+            <div className="mb-8 -mt-4">
+              <WeatherAlerts alerts={weather.alerts} />
+            </div>
+          )}
+        </>
       )}
 
-      {/* ── To do today ── */}
-      {(dashTasks.length > 0 || customTasks.length > 0) && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-serif text-base font-semibold">To do today</h2>
-            <Link href="/tasks" className="text-sm text-muted-foreground hover:underline">
-              All tasks →
-            </Link>
-          </div>
+      {/* ── 2. To do today ── */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-serif text-base font-semibold">To do today</h2>
+          <Link href="/tasks" className="text-sm text-muted-foreground hover:underline">
+            All tasks →
+          </Link>
+        </div>
+        {dashTasks.length === 0 && customTasks.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-3">
+            Nothing pressing today. Enjoy the garden.
+          </p>
+        ) : (
           <div className="space-y-2">
             {dashTasks.map((task) => (
               <TaskItem key={task.id} task={task} />
@@ -147,61 +131,43 @@ export default async function DashboardPage() {
               <CustomTaskItem key={task.id} task={task} />
             ))}
           </div>
-        </div>
-      )}
-
-      {/* ── Stat cards ── */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 mb-8">
-        <Link href="/beds">
-          <Card className="hover:shadow-warm-lg transition-shadow cursor-pointer">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Active beds</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{counts.bedCount}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">garden beds tracked</p>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/beds?view=plants">
-          <Card className="hover:shadow-warm-lg transition-shadow cursor-pointer">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Active plantings</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{counts.activePlantingCount}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">plants in the ground</p>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/tasks">
-          <Card className="hover:shadow-warm-lg transition-shadow cursor-pointer">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Open tasks</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{totalTaskCount}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">need attention</p>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/journal">
-          <Card className="hover:shadow-warm-lg transition-shadow cursor-pointer">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Journal entries</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{counts.journalCount}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">logs recorded</p>
-            </CardContent>
-          </Card>
-        </Link>
+        )}
       </div>
 
-      {/* ── Sow this month (user's beds only) ── */}
+      {/* ── 3. Quick log + compact stat pills ── */}
+      <div className="mb-8">
+        {/* Compact stat pills — replaces the old 4-card grid */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          <Link
+            href="/beds"
+            className="text-xs px-3 py-1 rounded-full border border-border bg-card text-muted-foreground hover:text-foreground hover:border-garden-300 transition-colors"
+          >
+            {counts.bedCount} beds
+          </Link>
+          <Link
+            href="/beds?view=plants"
+            className="text-xs px-3 py-1 rounded-full border border-border bg-card text-muted-foreground hover:text-foreground hover:border-garden-300 transition-colors"
+          >
+            {counts.activePlantingCount} plantings
+          </Link>
+          <Link
+            href="/tasks"
+            className="text-xs px-3 py-1 rounded-full border border-border bg-card text-muted-foreground hover:text-foreground hover:border-garden-300 transition-colors"
+          >
+            {totalTaskCount} tasks
+          </Link>
+          <Link
+            href="/journal"
+            className="text-xs px-3 py-1 rounded-full border border-border bg-card text-muted-foreground hover:text-foreground hover:border-garden-300 transition-colors"
+          >
+            {counts.journalCount} journal entries
+          </Link>
+        </div>
+
+        <QuickLogWidget plantings={plantings} lastEventMap={lastEventMap} />
+      </div>
+
+      {/* ── 4. Sow this month ── */}
       {(sowIndoors.length > 0 || sowOutdoors.length > 0) && (
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3">
@@ -245,7 +211,7 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* ── Beds snapshot ── */}
+      {/* ── 5. Beds snapshot ── */}
       {beds.length > 0 && (
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3">
