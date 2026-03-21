@@ -1,10 +1,36 @@
 import { KILDARE } from "./constants";
 
+export type WeatherCondition =
+  | "clear"
+  | "partly-cloudy"
+  | "cloudy"
+  | "drizzle"
+  | "rain"
+  | "heavy-rain"
+  | "thunderstorm"
+  | "fog"
+  | "snow";
+
+/** Maps an Open-Meteo WMO weather code to a WeatherCondition. */
+export function getWeatherCondition(code: number): WeatherCondition {
+  if (code === 0) return "clear";
+  if (code === 1 || code === 2) return "partly-cloudy";
+  if (code === 3) return "cloudy";
+  if (code === 45 || code === 48) return "fog";
+  if (code === 51 || code === 53 || code === 55) return "drizzle";
+  if (code === 61 || code === 63) return "rain";
+  if (code === 65 || code === 80 || code === 81) return "heavy-rain";
+  if (code === 82 || code === 95 || code === 96 || code === 99) return "thunderstorm";
+  if ([71, 73, 75, 77, 85, 86].includes(code)) return "snow";
+  return "cloudy"; // safe fallback
+}
+
 export interface WeatherDay {
   date: string;
   tempMin: number;
   tempMax: number;
   precipitation: number;
+  weatherCode: number;
 }
 
 export interface WeatherAlert {
@@ -28,12 +54,12 @@ export async function getWeatherForecast(
     `https://api.open-meteo.com/v1/forecast` +
     `?latitude=${lat}` +
     `&longitude=${lng}` +
-    `&daily=temperature_2m_min,temperature_2m_max,precipitation_sum` +
+    `&daily=temperature_2m_min,temperature_2m_max,precipitation_sum,weather_code` +
     `&timezone=Europe%2FDublin` +
     `&forecast_days=4`;
 
   const res = await fetch(url, {
-    next: { revalidate: 3600 }, // cache 1 hour
+    next: { revalidate: 3600 },
   });
 
   if (!res.ok) throw new Error(`Open-Meteo error: ${res.status}`);
@@ -46,6 +72,7 @@ export async function getWeatherForecast(
       tempMin: data.daily.temperature_2m_min[i] as number,
       tempMax: data.daily.temperature_2m_max[i] as number,
       precipitation: data.daily.precipitation_sum[i] as number,
+      weatherCode: data.daily.weather_code[i] as number,
     })
   );
 
