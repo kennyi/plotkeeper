@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createPlanting, updatePlantingStatus, deletePlanting, updatePlantingPhoto, updatePlanting } from "@/lib/supabase";
-import type { BedPlanting } from "@/types";
+import { createPlanting, updatePlantingStatus, deletePlanting, updatePlantingPhoto, updatePlanting, logTaskEvent } from "@/lib/supabase";
+import type { BedPlanting, TaskEventType } from "@/types";
 
 export async function createPlantingAction(bedId: string, formData: FormData) {
   const raw = (key: string) => formData.get(key) as string | null;
@@ -187,4 +187,18 @@ export async function updatePlantingAction(
   });
 
   revalidatePath(`/beds/${bedId}`);
+}
+
+/**
+ * Quick Log — logs a care event for a planting directly from the dashboard.
+ * Thin wrapper around logTaskEvent(); revalidates dashboard and tasks pages.
+ */
+export async function quickLogAction(
+  plantingId: string,
+  eventType: TaskEventType,
+  notes: string | null
+): Promise<void> {
+  await logTaskEvent({ planting_id: plantingId, event_type: eventType, notes });
+  revalidatePath("/dashboard");
+  revalidatePath("/tasks");
 }
