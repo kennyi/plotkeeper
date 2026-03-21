@@ -17,8 +17,8 @@ export function getWeatherCondition(code: number): WeatherCondition {
   if (code === 1 || code === 2) return "partly-cloudy";
   if (code === 3) return "cloudy";
   if (code === 45 || code === 48) return "fog";
-  if (code === 51 || code === 53 || code === 55) return "drizzle";
-  if (code === 61 || code === 63) return "rain";
+  if ([51, 53, 55, 56, 57].includes(code)) return "drizzle";
+  if ([61, 63, 66, 67].includes(code)) return "rain";
   if (code === 65 || code === 80 || code === 81) return "heavy-rain";
   if (code === 82 || code === 95 || code === 96 || code === 99) return "thunderstorm";
   if ([71, 73, 75, 77, 85, 86].includes(code)) return "snow";
@@ -66,13 +66,15 @@ export async function getWeatherForecast(
 
   const data = await res.json();
 
+  if (!data?.daily?.time) throw new Error("Open-Meteo returned unexpected shape");
+
   const days: WeatherDay[] = (data.daily.time as string[]).map(
     (date: string, i: number) => ({
       date,
-      tempMin: data.daily.temperature_2m_min[i] as number,
-      tempMax: data.daily.temperature_2m_max[i] as number,
-      precipitation: data.daily.precipitation_sum[i] as number,
-      weatherCode: data.daily.weather_code[i] as number,
+      tempMin: (data.daily.temperature_2m_min[i] as number | null) ?? 99,
+      tempMax: (data.daily.temperature_2m_max[i] as number | null) ?? 99,
+      precipitation: (data.daily.precipitation_sum[i] as number | null) ?? 0,
+      weatherCode: (data.daily.weather_code[i] as number | null) ?? 3,
     })
   );
 
