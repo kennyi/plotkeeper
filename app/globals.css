@@ -50,3 +50,69 @@
     -moz-osx-font-smoothing: grayscale;
   }
 }
+
+/* ── Weather animations ──────────────────────────────────────────────────── */
+/* All animations are gated: only active when the user has no preference for  */
+/* reduced motion. Respects system accessibility settings.                    */
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes glow-pulse {
+    0%, 100% { opacity: 0.4; }
+    50%       { opacity: 0.8; }
+  }
+
+  @keyframes cloud-drift {
+    0%   { transform: translateX(-10px); opacity: 0.3; }
+    50%  { transform: translateX(10px);  opacity: 0.5; }
+    100% { transform: translateX(-10px); opacity: 0.3; }
+  }
+
+  @keyframes rain-fall {
+    0%   { transform: translateY(-100%); opacity: 0; }
+    10%  { opacity: 0.6; }
+    90%  { opacity: 0.6; }
+    100% { transform: translateY(100%); opacity: 0; }
+  }
+
+  @keyframes snow-fall {
+    0%   { transform: translateY(-100%) translateX(0px); opacity: 0; }
+    10%  { opacity: 0.7; }
+    50%  { transform: translateY(50%) translateX(8px); }
+    90%  { opacity: 0.7; }
+    100% { transform: translateY(100%) translateX(-4px); opacity: 0; }
+  }
+
+  @keyframes fog-shimmer {
+    0%, 100% { opacity: 0.08; }
+    50%       { opacity: 0.18; }
+  }
+
+  @keyframes thunder-flash {
+    0%, 90%, 100% { opacity: 0; }
+    92%, 96%      { opacity: 0.12; }
+  }
+
+  .animate-glow-pulse {
+    animation: glow-pulse 3s ease-in-out infinite;
+  }
+
+  .animate-cloud-drift {
+    animation: cloud-drift 8s ease-in-out infinite;
+  }
+
+  .animate-rain-fall {
+    animation: rain-fall linear infinite;
+  }
+
+  .animate-snow-fall {
+    animation: snow-fall linear infinite;
+  }
+
+  .animate-fog-shimmer {
+    animation: fog-shimmer 4s ease-in-out infinite;
+  }
+
+  .animate-thunder-flash {
+    animation: thunder-flash 6s ease-in-out infinite;
+  }
+}
