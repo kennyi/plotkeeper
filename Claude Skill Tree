@@ -1,0 +1,155 @@
+# Claude Code Skill Tree
+### A personal learning path for PlotKeeper & beyond
+
+This document tracks your progress with Claude Code techniques. Check off skills as you try them, add your own notes on what worked, and use it as a living reference. Keep this file in your repo alongside `CLAUDE.md`.
+
+---
+
+## How to use this
+
+- **Status:** `[ ]` not tried · `[~]` in progress · `[x]` confident
+- **Notes:** Add your own observations under each skill — what prompt worked, what didn't, gotchas
+- Work through tiers in order. Each tier builds on the last.
+
+---
+
+## Tier 1 — Foundations
+*You're already here. These are documented for completeness.*
+
+- [x] **Basic feature prompting** — Ask Claude to build a component or page
+- [x] **Mockup server** — Run a local HTML server to preview UI ideas in the browser
+- [x] **CLAUDE.md** — Project context file that primes Claude at the start of every session
+- [ ] **PRD-driven sessions** — Write a Product Requirements Doc first, hand it to Claude as the spec. Prevents scope drift and keeps sessions focused.
+  - *Try it:* Before your next PlotKeeper feature, write 10–15 lines describing the feature, the user goal, and what done looks like. Open a new Claude Code session and paste it as your first message.
+
+---
+
+## Tier 2 — Context Mastery
+*The difference between Claude sessions that drift and ones that stay sharp.*
+
+### 2a. CLAUDE.md discipline
+- [ ] **Split reference material out of CLAUDE.md** — Your main file should be rules + patterns only. Move schema summaries, known issues, and phase plans to separate files (`SCHEMA.md`, `ROADMAP.md`) and reference them from CLAUDE.md.
+  - *Why:* Smaller CLAUDE.md = less noise loaded into context on every session
+  - *Try it:* Extract your DB schema table into `docs/SCHEMA.md` and replace it in CLAUDE.md with a one-liner: `See docs/SCHEMA.md for full schema.`
+
+- [ ] **Session-scoped context files** — For big tasks (e.g. the auth migration), create a temporary `TASK.md` that describes just that task. Drop it at the start of the session. Delete it when done.
+  - *Try it:* Write a `TASK_AUTH_MIGRATION.md` for your Phase 4 auth work
+
+- [ ] **Explicit "don't touch" rules** — Add a section to CLAUDE.md listing files Claude should never modify without asking (e.g. migration files, seed data)
+
+### 2b. MCP Tools
+- [ ] **Supabase MCP** — Connect Claude directly to your Supabase project so it can inspect tables, run queries, and check RLS policies without you pasting schema info
+  - *Setup:* Add the Supabase MCP server to your Claude Code config. Ask Claude to `describe the bed_plantings table` and verify it reads live schema.
+  - *Try it:* Ask Claude to audit your RLS policies and flag any tables missing row-level security
+
+- [ ] **Context7** — Pulls live, version-accurate docs for your dependencies (Next.js 14, Supabase JS client, Tailwind) into the session
+  - *Why:* Stops Claude using deprecated APIs or hallucinating method signatures
+  - *Try it:* Ask a Supabase query question and compare the answer with and without Context7 active
+
+- [ ] **Chaining MCP tools** — Use Supabase MCP + Context7 together in one session. Claude inspects your real schema AND uses current docs to write the query correctly.
+
+---
+
+## Tier 3 — Design Ideation Workflows
+*Beyond the mockup server.*
+
+### 3a. Multi-direction design sprints
+- [ ] **Three-direction component sprint** — Ask Claude to produce 3 visually distinct versions of a single component as separate self-contained HTML files. Pick a direction, then build from it.
+  - *Prompt template:*
+    ```
+    Generate 3 distinct visual designs for a [PlantCard component].
+    Each should be a self-contained HTML file with inline CSS.
+    Direction A: minimal and data-focused
+    Direction B: rich and illustrative, earthy feel
+    Direction C: your own bold interpretation
+    No shared assumptions between files.
+    ```
+
+- [ ] **Design token audit** — Share your `tailwind.config.ts` and ask Claude to critique whether the colour tokens are being used consistently across components, or whether there's drift.
+
+### 3b. Interactive prototyping
+- [ ] **Fake-data prototype first** — Before implementing a complex feature, have Claude build a fully interactive HTML prototype with hardcoded data. You UX-test it, then hand the prototype back as the spec for real implementation.
+  - *Try it:* Build the Tasks system as a prototype before writing any Next.js code
+
+- [ ] **Responsive preview harness** — Ask Claude to wrap a component mockup in a three-panel layout showing mobile (375px), tablet (768px), and desktop (1280px) side by side in one HTML file.
+  - *Prompt:*
+    ```
+    Wrap this component in a responsive preview harness showing it at 375px, 768px, and 1280px simultaneously. Use iframes or CSS scaling.
+    ```
+
+### 3c. Visual auditing
+- [ ] **Screenshot critique** — Take a screenshot of your current UI and paste it into Claude with your design spec. Ask it to identify inconsistencies, accessibility issues, or deviations from your intended aesthetic.
+  - *Try it:* Screenshot the PlotKeeper dashboard and ask Claude to critique it against the earthy/calm palette spec in your CLAUDE.md
+
+- [ ] **Component spec sheet** — Ask Claude to generate a single-page HTML visual reference of all your UI components (buttons, cards, badges, inputs, status chips) in every state. Use it to spot inconsistency and document your design system.
+  - *Prompt:*
+    ```
+    Generate a component spec sheet for PlotKeeper. Show every reusable UI element in all states (default, hover, active, disabled, empty). Use the garden-* colour tokens. Make it a single self-contained HTML file.
+    ```
+
+---
+
+## Tier 4 — Agentic Workflows
+*Orchestrating Claude to run parallel or sequential tasks without hand-holding.*
+
+### 4a. Subagents basics
+- [ ] **Understand the /agent command** — In Claude Code, `/agent` spawns a subagent that works on a scoped task and reports back. Learn when to use it vs. a regular prompt.
+  - *Rule of thumb:* Use subagents for tasks that are self-contained, have a clear done state, and don't need your input mid-way
+
+- [ ] **Codebase audit agent** — Ask Claude to spawn an agent specifically tasked with finding unused files, duplicate logic, and dead imports across the repo. It reports a list; you decide what to delete.
+  - *Prompt:*
+    ```
+    Run an audit agent on this repo. Task: find (1) files with no imports pointing to them, (2) any logic duplicated across more than one file, (3) any components defined but never used in a page. Report findings only — make no changes.
+    ```
+
+- [ ] **Parallel design agents** — Spawn two agents simultaneously: one generates a mobile design, one generates desktop. Compare and merge the best ideas.
+
+### 4b. Agent + MCP combinations
+- [ ] **Schema + migration agent** — Agent uses Supabase MCP to read current schema, then drafts the SQL migration needed for a new feature. You review before running anything.
+
+- [ ] **Test coverage agent** — Agent reads your existing test files, maps which components/functions have no test coverage, and drafts the missing tests for your review.
+
+---
+
+## Tier 5 — Claude as a System
+*Everything working together with zero re-explaining per session.*
+
+- [ ] **Session startup ritual** — Define a standard opening prompt you use at the start of every Claude Code session that loads CLAUDE.md, confirms the active task, and states what Claude should NOT do without asking.
+  - *Example:*
+    ```
+    Read CLAUDE.md. Today's task is [X]. Do not modify migration files or seed data without confirming with me first. Ask before creating new components — check if one already exists.
+    ```
+
+- [ ] **End-of-session handoff note** — At the end of every session, ask Claude to write a 5-line summary of what was changed, what's in progress, and what the next session should pick up. Paste it into a `SESSION_LOG.md`.
+
+- [ ] **Automated context refresh** — Set up a GitHub Action (or just a local script) that regenerates a `REPO_SUMMARY.md` on every push — file count, component list, table list — so Claude always has a current map of the repo without you maintaining it manually.
+
+- [ ] **PRD → prototype → implementation pipeline** — The full workflow: write PRD → Claude builds interactive prototype → you sign off → Claude implements from prototype as spec → tests written alongside. No feature skips any step.
+
+---
+
+## Personal Notes
+*Add your own observations here as you work through the tiers.*
+
+```
+[Date] — [Skill tried] — [What worked / what didn't]
+```
+
+---
+
+## Quick Reference — Prompt Templates
+
+| Goal | Starter prompt |
+|---|---|
+| Multi-direction sprint | "Give me 3 distinct visual directions for [X] as separate HTML files" |
+| Responsive harness | "Wrap this in a 375/768/1280 preview harness in one HTML file" |
+| Codebase audit | "Audit for unused files, duplicate logic, dead imports — report only, no changes" |
+| Visual critique | "Critique this screenshot against the design spec in CLAUDE.md" |
+| Component spec sheet | "Generate a component spec sheet showing all UI elements in all states" |
+| Session startup | "Read CLAUDE.md. Today's task is X. Do not modify Y without asking." |
+| End of session | "Write a 5-line handoff note summarising what changed and what's next" |
+
+---
+
+*Last updated: March 2026*
+*Keep this file in your repo at the root level alongside CLAUDE.md*
