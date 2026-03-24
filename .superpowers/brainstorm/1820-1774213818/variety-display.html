@@ -1,0 +1,209 @@
+<style>
+  :root {
+    --garden-50: #f6f9f0;
+    --garden-100: #e9f2db;
+    --garden-200: #d3e5b7;
+    --garden-500: #7aad3f;
+    --garden-600: #5d8f2a;
+    --garden-700: #446820;
+    --stone-100: #f5f5f4;
+    --stone-200: #e7e5e4;
+    --stone-300: #d6d3d1;
+    --stone-400: #a8a29e;
+    --stone-500: #78716c;
+    --stone-600: #57534e;
+    --stone-700: #44403c;
+    --stone-900: #1c1917;
+  }
+
+  .q { font-size: 1.1rem; font-weight: 600; color: var(--stone-700); margin-bottom: 0.25rem; }
+  .subtitle { color: var(--stone-500); margin-bottom: 2rem; font-size: 0.95rem; }
+
+  .approaches { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem; }
+  @media (max-width: 900px) { .approaches { grid-template-columns: 1fr; } }
+
+  .approach {
+    border: 2px solid var(--stone-200);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: white;
+  }
+  .approach:hover { border-color: var(--garden-500); box-shadow: 0 2px 12px rgba(90,140,40,0.12); }
+  .approach.selected { border-color: var(--garden-500); box-shadow: 0 0 0 3px rgba(122,173,63,0.18); }
+
+  .approach-label {
+    background: var(--garden-50);
+    border-bottom: 1px solid var(--stone-200);
+    padding: 0.6rem 1rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .approach-letter {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--garden-600); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 700; flex-shrink: 0;
+  }
+  .approach-title { font-weight: 600; font-size: 0.9rem; color: var(--stone-700); }
+
+  .mockup-area { padding: 1rem; background: var(--stone-100); min-height: 260px; }
+  .approach-desc { padding: 0.75rem 1rem; font-size: 0.82rem; color: var(--stone-500); border-top: 1px solid var(--stone-200); line-height: 1.5; }
+
+  /* --- Option A: Grouped / accordion --- */
+  .plant-group { background: white; border-radius: 8px; border: 1px solid var(--stone-200); overflow: hidden; margin-bottom: 0.5rem; }
+  .plant-group-header { padding: 0.6rem 0.8rem; display: flex; align-items: center; justify-content: space-between; }
+  .plant-group-name { font-weight: 600; font-size: 0.85rem; color: var(--stone-700); }
+  .plant-group-badge { font-size: 0.7rem; background: var(--garden-100); color: var(--garden-700); border-radius: 999px; padding: 0.1rem 0.5rem; }
+  .plant-group-varieties { background: var(--garden-50); border-top: 1px solid var(--stone-200); padding: 0.4rem 0.8rem; display: flex; flex-direction: column; gap: 0.3rem; }
+  .variety-row { font-size: 0.78rem; color: var(--stone-600); display: flex; align-items: center; gap: 0.4rem; }
+  .variety-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--garden-500); flex-shrink: 0; }
+  .variety-tag { font-size: 0.68rem; background: var(--stone-200); color: var(--stone-600); border-radius: 4px; padding: 0.05rem 0.35rem; }
+
+  /* --- Option B: Flat cards --- */
+  .flat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+  .flat-card { background: white; border-radius: 8px; border: 1px solid var(--stone-200); padding: 0.6rem 0.75rem; }
+  .flat-parent { font-size: 0.7rem; color: var(--garden-600); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+  .flat-variety { font-size: 0.85rem; font-weight: 600; color: var(--stone-700); margin: 0.1rem 0 0.25rem; }
+  .flat-meta { font-size: 0.7rem; color: var(--stone-400); }
+  .flat-base { background: var(--garden-50); border-color: var(--garden-200); }
+  .flat-base .flat-parent { color: var(--stone-400); }
+  .flat-base .flat-variety { font-size: 0.82rem; color: var(--stone-500); }
+
+  /* --- Option C: Plant card with variety chips --- */
+  .rich-card { background: white; border-radius: 8px; border: 1px solid var(--stone-200); overflow: hidden; }
+  .rich-card-top { padding: 0.65rem 0.8rem; }
+  .rich-card-name { font-weight: 700; font-size: 0.9rem; color: var(--stone-700); }
+  .rich-card-latin { font-size: 0.72rem; color: var(--stone-400); font-style: italic; }
+  .rich-card-divider { height: 1px; background: var(--stone-200); margin: 0 0.8rem; }
+  .rich-card-varieties { padding: 0.5rem 0.8rem; }
+  .varieties-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--stone-400); margin-bottom: 0.35rem; }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+  .chip { font-size: 0.72rem; border-radius: 999px; padding: 0.2rem 0.6rem; cursor: pointer; transition: background 0.15s; }
+  .chip-all { background: var(--stone-200); color: var(--stone-600); }
+  .chip-variety { background: var(--garden-100); color: var(--garden-700); border: 1px solid var(--garden-200); }
+  .chip-active { background: var(--garden-500); color: white; border-color: var(--garden-500); }
+</style>
+
+<p class="q">How should varieties appear in the plant library?</p>
+<p class="subtitle">Each approach handles the relationship between a plant (e.g. Sunflower) and its varieties (Harlequin F1, Claret F1) differently. Click an option to select it.</p>
+
+<div class="approaches">
+
+  <!-- Option A -->
+  <div class="approach" data-choice="a" onclick="toggleSelect(this)">
+    <div class="approach-label">
+      <div class="approach-letter">A</div>
+      <div class="approach-title">Grouped / Expandable</div>
+    </div>
+    <div class="mockup-area">
+      <div style="font-size:0.7rem;color:var(--stone-400);margin-bottom:0.5rem;">Plant Library › Flowers</div>
+      <div class="plant-group">
+        <div class="plant-group-header">
+          <div class="plant-group-name">🌻 Sunflower</div>
+          <div class="plant-group-badge">3 varieties</div>
+        </div>
+        <div class="plant-group-varieties">
+          <div class="variety-row"><div class="variety-dot"></div> Harlequin F1 <span class="variety-tag">F1</span></div>
+          <div class="variety-row"><div class="variety-dot"></div> Claret F1 <span class="variety-tag">F1</span></div>
+          <div class="variety-row"><div class="variety-dot"></div> Mammoth</div>
+        </div>
+      </div>
+      <div class="plant-group">
+        <div class="plant-group-header">
+          <div class="plant-group-name">🌸 Sweet Pea</div>
+          <div class="plant-group-badge">2 varieties</div>
+        </div>
+        <div class="plant-group-varieties">
+          <div class="variety-row"><div class="variety-dot"></div> Heirloom Bicolour Mixed</div>
+          <div class="variety-row"><div class="variety-dot"></div> Matucana</div>
+        </div>
+      </div>
+      <div class="plant-group" style="opacity:0.5;">
+        <div class="plant-group-header">
+          <div class="plant-group-name">💙 Cornflower</div>
+          <div class="plant-group-badge">1 variety</div>
+        </div>
+      </div>
+    </div>
+    <div class="approach-desc">Plants stay grouped. Varieties nest underneath. Clear hierarchy — great for browsing by plant type. Requires an expand/collapse interaction.</div>
+  </div>
+
+  <!-- Option B -->
+  <div class="approach" data-choice="b" onclick="toggleSelect(this)">
+    <div class="approach-label">
+      <div class="approach-letter">B</div>
+      <div class="approach-title">Flat List with Parent Label</div>
+    </div>
+    <div class="mockup-area">
+      <div style="font-size:0.7rem;color:var(--stone-400);margin-bottom:0.5rem;">Plant Library › All Plants</div>
+      <div class="flat-grid">
+        <div class="flat-card flat-base">
+          <div class="flat-parent">Sunflower · Generic</div>
+          <div class="flat-variety">Sunflower</div>
+          <div class="flat-meta">Annual · Full sun</div>
+        </div>
+        <div class="flat-card">
+          <div class="flat-parent">Sunflower</div>
+          <div class="flat-variety">Harlequin F1</div>
+          <div class="flat-meta">90–120cm · Cut flower</div>
+        </div>
+        <div class="flat-card">
+          <div class="flat-parent">Sunflower</div>
+          <div class="flat-variety">Claret F1</div>
+          <div class="flat-meta">60–80cm · Deep red</div>
+        </div>
+        <div class="flat-card">
+          <div class="flat-parent">Cosmos</div>
+          <div class="flat-variety">Apricot Lemonade</div>
+          <div class="flat-meta">Annual · Pastel mix</div>
+        </div>
+      </div>
+    </div>
+    <div class="approach-desc">Varieties are independent cards alongside the base plant. Search and filter work across everything. Familiar grid feel — no extra interaction needed.</div>
+  </div>
+
+  <!-- Option C -->
+  <div class="approach" data-choice="c" onclick="toggleSelect(this)">
+    <div class="approach-label">
+      <div class="approach-letter">C</div>
+      <div class="approach-title">Plant Card with Variety Chips</div>
+    </div>
+    <div class="mockup-area">
+      <div style="font-size:0.7rem;color:var(--stone-400);margin-bottom:0.5rem;">Plant Library › Flowers</div>
+      <div class="rich-card" style="margin-bottom:0.5rem;">
+        <div class="rich-card-top">
+          <div class="rich-card-name">🌻 Sunflower</div>
+          <div class="rich-card-latin">Helianthus annuus</div>
+        </div>
+        <div class="rich-card-divider"></div>
+        <div class="rich-card-varieties">
+          <div class="varieties-label">Varieties in your library</div>
+          <div class="chip-row">
+            <span class="chip chip-all">All</span>
+            <span class="chip chip-variety chip-active">Harlequin F1</span>
+            <span class="chip chip-variety">Claret F1</span>
+            <span class="chip chip-variety">Mammoth</span>
+          </div>
+        </div>
+      </div>
+      <div class="rich-card">
+        <div class="rich-card-top">
+          <div class="rich-card-name">🌸 Sweet Pea</div>
+          <div class="rich-card-latin">Lathyrus odoratus</div>
+        </div>
+        <div class="rich-card-divider"></div>
+        <div class="rich-card-varieties">
+          <div class="varieties-label">Varieties in your library</div>
+          <div class="chip-row">
+            <span class="chip chip-all">All</span>
+            <span class="chip chip-variety">Heirloom Bicolour</span>
+            <span class="chip chip-variety">Matucana</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="approach-desc">One card per plant. Varieties are chips inside the card — click a chip to see that variety's specific details. Compact and elegant. More complex to build.</div>
+  </div>
+
+</div>

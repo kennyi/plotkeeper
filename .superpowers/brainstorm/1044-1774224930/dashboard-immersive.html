@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PlotKeeper — Immersive Weather Dashboard</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  overflow-x: hidden;
+  height: 100vh;
+}
+
+/* ── Canvas sits fixed behind everything ── */
+#sky {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── Tabs ── */
+.tabs {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .55rem 1.25rem;
+  background: rgba(10,12,10,0.55);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.tabs-label {
+  font-size: .68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: rgba(255,255,255,.4);
+  margin-right: .25rem;
+}
+.tab {
+  font-size: .75rem;
+  padding: .28rem .7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.15);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.6);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all .2s;
+  letter-spacing: .01em;
+}
+.tab:hover { border-color: rgba(255,255,255,.35); color: rgba(255,255,255,.9); }
+.tab.active { background: rgba(255,255,255,.15); border-color: rgba(255,255,255,.4); color: #fff; }
+
+/* ── Page wrapper ── */
+.page {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  padding: 3.5rem 1.5rem 2rem;
+  transition: background 1s ease;
+}
+
+/* ── Weather-driven page backgrounds ── */
+.page.sunny {
+  background: linear-gradient(168deg,
+    #c8dba0 0%, #b0ca80 20%, #c4d898 45%,
+    #dce8b0 70%, #e8f0c8 100%);
+}
+.page.cloudy {
+  background: linear-gradient(168deg,
+    #7a8c82 0%, #8a9c90 25%, #909e96 55%,
+    #98a89e 80%, #8c9c92 100%);
+}
+.page.rainy {
+  background: linear-gradient(168deg,
+    #141c18 0%, #1a2420 25%, #1e2c26 55%,
+    #192218 80%, #141c14 100%);
+}
+.page.storm {
+  background: linear-gradient(168deg,
+    #080c0a 0%, #0c1210 30%, #0e1612 60%,
+    #0a0e0c 100%);
+}
+
+/* ── Lightning flash overlay ── */
+#lightning {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 40% 20%,
+    rgba(200,220,255,0.95) 0%, rgba(180,200,255,0.4) 40%, transparent 75%);
+  opacity: 0;
+}
+
+/* ── Vignette ── */
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%,
+    transparent 55%, rgba(0,0,0,0.28) 100%);
+}
+
+/* ── Content ── */
+.content {
+  position: relative;
+  z-index: 4;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+/* ── Header ── */
+.db-header { margin-bottom: .85rem; }
+.db-greeting {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  transition: color .6s, text-shadow .6s;
+}
+.db-date {
+  font-size: .72rem;
+  margin-top: .08rem;
+  transition: color .6s;
+}
+.db-alert {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .45rem .8rem;
+  border-radius: 7px;
+  margin-bottom: .85rem;
+  font-size: .75rem;
+  font-weight: 500;
+  transition: all .6s;
+}
+.alert-pip {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background .6s;
+}
+
+/* ── Grid layouts ── */
+.grid-2   { display: grid; grid-template-columns: 1.15fr 1fr; gap: .6rem; margin-bottom: .6rem; }
+.grid-2b  { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+
+/* ── Panels — base (light) ── */
+.panel {
+  border-radius: 10px;
+  overflow: hidden;
+  transition: background .6s, border-color .6s, box-shadow .6s;
+}
+.panel-head {
+  padding: .38rem .75rem;
+  font-size: .63rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  transition: all .6s;
+}
+.panel-body {
+  padding: .6rem .75rem;
+  transition: background .6s, border-color .6s;
+}
+
+/* Light-mode panel colours */
+.page.sunny .panel-body,
+.page.cloudy .panel-body {
+  background: rgba(255,255,255,0.88);
+  border: 1px solid rgba(0,0,0,0.09);
+  border-top: none;
+}
+.page.sunny .panel-head { color: white; }
+.page.sunny .head-wx { background: #4a7a20; }
+.page.sunny .head-gd { background: #5a5248; }
+.page.sunny .head-td { background: #b04c26; }
+.page.sunny .head-sw { background: #3d8020; }
+
+.page.cloudy .panel-head { color: white; }
+.page.cloudy .head-wx { background: #4a5a54; }
+.page.cloudy .head-gd { background: #4a5248; }
+.page.cloudy .head-td { background: #8c4c30; }
+.page.cloudy .head-sw { background: #4a5a48; }
+
+/* Dark-mode panel colours (rain + storm) */
+.page.rainy .panel-body,
+.page.storm .panel-body {
+  background: rgba(255,255,255,0.045);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-top: none;
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  box-shadow: inset 0 0 0 0.5px rgba(255,255,255,0.04),
+              0 8px 32px rgba(0,0,0,0.35);
+}
+.page.rainy .panel-head,
+.page.storm .panel-head {
+  border: 1px solid rgba(255,255,255,0.07);
+  border-bottom: none;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.page.rainy .head-wx,
+.page.storm .head-wx {
+  background: rgba(60,100,70,0.45);
+  color: rgba(160,210,160,0.9);
+}
+.page.rainy .head-gd,
+.page.storm .head-gd {
+  background: rgba(60,60,55,0.45);
+  color: rgba(180,175,165,0.9);
+}
+.page.rainy .head-td,
+.page.storm .head-td {
+  background: rgba(120,60,40,0.4);
+  color: rgba(220,160,130,0.9);
+}
+.page.rainy .head-sw,
+.page.storm .head-sw {
+  background: rgba(50,90,50,0.45);
+  color: rgba(150,205,140,0.9);
+}
+
+/* ── Text colours — adaptive ── */
+.page.sunny .db-greeting,
+.page.cloudy .db-greeting { color: #1c2018; }
+.page.rainy .db-greeting  { color: rgba(210,228,210,0.95); text-shadow: 0 1px 12px rgba(0,0,0,0.5); }
+.page.storm .db-greeting  { color: rgba(195,215,195,0.9);  text-shadow: 0 1px 16px rgba(0,0,0,0.7); }
+
+.page.sunny .db-date,
+.page.cloudy .db-date { color: rgba(30,28,24,0.5); }
+.page.rainy .db-date  { color: rgba(150,175,155,0.65); }
+.page.storm .db-date  { color: rgba(130,155,135,0.6); }
+
+.page.sunny .db-alert  { background: rgba(255,255,255,0.65); color: #2c3820; border: 1px solid rgba(0,0,0,0.08); }
+.page.cloudy .db-alert { background: rgba(255,255,255,0.5);  color: #2c3020; border: 1px solid rgba(0,0,0,0.08); }
+.page.rainy .db-alert  {
+  background: rgba(30,80,50,0.3);
+  color: rgba(170,210,175,0.9);
+  border: 1px solid rgba(100,180,120,0.15);
+  backdrop-filter: blur(12px);
+}
+.page.storm .db-alert  {
+  background: rgba(20,40,30,0.5);
+  color: rgba(155,195,160,0.85);
+  border: 1px solid rgba(80,140,90,0.12);
+  backdrop-filter: blur(12px);
+}
+
+/* ── Weather body ── */
+.wx-center { text-align: center; padding: .2rem 0 .1rem; }
+.wx-temp {
+  font-size: 1.6rem; font-weight: 700; letter-spacing: -.03em;
+  line-height: 1; transition: color .6s;
+}
+.wx-lo { font-size: .9rem; font-weight: 400; opacity: .5; }
+.wx-cond { font-size: .65rem; margin-top: .12rem; transition: color .6s; }
+.fc-strip {
+  display: flex; justify-content: space-between;
+  margin-top: .4rem; padding-top: .38rem;
+  border-top: 1px solid rgba(128,128,128,.1);
+}
+.fc-day { text-align: center; }
+.fc-lbl { font-size: .58rem; transition: color .6s; }
+.fc-tmp { font-size: .72rem; font-weight: 600; transition: color .6s; }
+
+/* light weather text */
+.page.sunny .wx-temp,
+.page.cloudy .wx-temp { color: #1c2018; }
+.page.sunny .wx-cond,
+.page.cloudy .wx-cond,
+.page.sunny .fc-lbl,
+.page.cloudy .fc-lbl  { color: #78746c; }
+.page.sunny .fc-tmp,
+.page.cloudy .fc-tmp  { color: #2c2c28; }
+
+/* dark weather text */
+.page.rainy .wx-temp,
+.page.storm .wx-temp { color: rgba(215,235,215,0.95); }
+.page.rainy .wx-cond,
+.page.storm .wx-cond,
+.page.rainy .fc-lbl,
+.page.storm .fc-lbl  { color: rgba(140,170,145,0.7); }
+.page.rainy .fc-tmp,
+.page.storm .fc-tmp  { color: rgba(195,220,200,0.9); }
+
+/* ── Stat grid ── */
+.stat-row { display:flex; gap:.4rem; }
+.stat-row + .stat-row { margin-top: .32rem; }
+.stat-box { flex:1; text-align:center; }
+.stat-n { font-size: .95rem; font-weight: 700; transition: color .6s; }
+.stat-l { font-size: .58rem; transition: color .6s; }
+.page.sunny .stat-n,
+.page.cloudy .stat-n { color: #4a8030; }
+.page.sunny .stat-l,
+.page.cloudy .stat-l { color: #9c9488; }
+.page.rainy .stat-n,
+.page.storm .stat-n  { color: rgba(110,185,100,.9); }
+.page.rainy .stat-l,
+.page.storm .stat-l  { color: rgba(130,160,135,.6); }
+
+/* ── Tasks ── */
+.task-item {
+  font-size: .72rem; padding: .28rem 0;
+  display: flex; align-items: center; gap: .4rem;
+  border-bottom: 1px solid rgba(128,128,128,.08);
+  transition: color .6s, border-color .6s;
+}
+.task-item:last-child { border-bottom: none; }
+.page.sunny .task-item,
+.page.cloudy .task-item { color: #2c2c28; }
+.page.rainy .task-item,
+.page.storm .task-item  { color: rgba(200,220,202,0.9); }
+
+.badge { font-size: .56rem; border-radius: 3px; padding: .05rem .3rem; font-weight: 700; flex-shrink: 0; }
+.badge-od { background: rgba(194,85,45,.15); color: #c2552d; }
+.badge-ok { background: rgba(90,160,50,.15); color: #4a8030; }
+.page.rainy .badge-od,
+.page.storm .badge-od { background: rgba(194,85,45,.25); color: rgba(230,150,110,.9); }
+.page.rainy .badge-ok,
+.page.storm .badge-ok  { background: rgba(90,160,50,.2); color: rgba(130,200,110,.9); }
+
+/* ── Sow chips ── */
+.sow-sub { font-size: .61rem; margin-bottom: .22rem; transition: color .6s; }
+.page.sunny .sow-sub,
+.page.cloudy .sow-sub { color: #9c9488; }
+.page.rainy .sow-sub,
+.page.storm .sow-sub  { color: rgba(130,160,135,.7); }
+
+.sow-chips { display:flex; flex-wrap:wrap; gap:.22rem; margin-bottom:.28rem; }
+.chip { font-size: .62rem; padding: .14rem .45rem; border-radius: 999px; }
+.chip-in  { background: rgba(194,85,45,.12); color: #9e3d1a; }
+.chip-out { background: rgba(90,160,50,.12); color: #3d7020; }
+.page.rainy .chip-in,
+.page.storm .chip-in  { background: rgba(194,85,45,.2); color: rgba(225,145,105,.9); }
+.page.rainy .chip-out,
+.page.storm .chip-out { background: rgba(90,160,50,.18); color: rgba(125,195,105,.9); }
+</style>
+</head>
+<body>
+
+<canvas id="sky"></canvas>
+<div class="vignette"></div>
+<div id="lightning"></div>
+
+<div class="tabs">
+  <span class="tabs-label">Condition:</span>
+  <button class="tab active" onclick="setWeather('sunny',this)">Clear</button>
+  <button class="tab" onclick="setWeather('cloudy',this)">Overcast</button>
+  <button class="tab" onclick="setWeather('rainy',this)">Rain</button>
+  <button class="tab" onclick="setWeather('storm',this)">Storm</button>
+</div>
+
+<div class="page sunny" id="page">
+  <div class="content">
+
+    <div class="db-header">
+      <div class="db-greeting" id="greeting">Good day, Ian</div>
+      <div class="db-date">Monday · 23 March 2026 · Kildare</div>
+    </div>
+
+    <div class="db-alert" id="alert">
+      <div class="alert-pip" id="pip" style="background:#7aad3f"></div>
+      <span id="alert-text">Clear skies — a good day to get out in the garden</span>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head head-wx">Weather</div>
+        <div class="panel-body">
+          <div class="wx-center">
+            <div class="wx-temp" id="wx-temp">14°<span class="wx-lo">/6°</span></div>
+            <div class="wx-cond" id="wx-cond">Clear · Dry</div>
+          </div>
+          <div class="fc-strip">
+            <div class="fc-day"><div class="fc-lbl">Tue</div><div class="fc-tmp">13°</div></div>
+            <div class="fc-day"><div class="fc-lbl">Wed</div><div class="fc-tmp">9°</div></div>
+            <div class="fc-day"><div class="fc-lbl">Thu</div><div class="fc-tmp">7°</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head head-gd">Garden</div>
+        <div class="panel-body">
+          <div class="stat-row"><div class="stat-box"><div class="stat-n">4</div><div class="stat-l">Beds</div></div><div class="stat-box"><div class="stat-n">12</div><div class="stat-l">Plantings</div></div></div>
+          <div class="stat-row"><div class="stat-box"><div class="stat-n">3</div><div class="stat-l">Tasks</div></div><div class="stat-box"><div class="stat-n">27</div><div class="stat-l">Journal</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2b">
+      <div class="panel">
+        <div class="panel-head head-td">To Do Today</div>
+        <div class="panel-body">
+          <div class="task-item"><span class="badge badge-od">Overdue</span>Water Tomatoes</div>
+          <div class="task-item"><span class="badge badge-od">Overdue</span>Check Sweet Peas</div>
+          <div class="task-item"><span class="badge badge-ok">Due</span>Feed Cosmos</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head head-sw">Sow in March</div>
+        <div class="panel-body">
+          <div class="sow-sub">Indoors</div>
+          <div class="sow-chips"><span class="chip chip-in">Tomato</span><span class="chip chip-in">Cosmos</span><span class="chip chip-in">Sweet Pea</span></div>
+          <div class="sow-sub">Outdoors</div>
+          <div class="sow-chips"><span class="chip chip-out">Cornflower</span><span class="chip chip-out">Onion</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('sky');
+const ctx = canvas.getContext('2d');
+let W, H, raf, particles = [], mode = 'sunny';
+
+function resize() {
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+/* ════════════════════════════════════
+   RAIN SYSTEM — 3 depth layers
+   ════════════════════════════════════ */
+const RAIN_LAYERS = [
+  /* far  */ { count: 80,  len: [7,12],  spd: [5,9],   w: 0.5, alpha: [.08,.16], blue: 170 },
+  /* mid  */ { count: 60,  len: [12,20], spd: [11,17],  w: 1.0, alpha: [.18,.30], blue: 185 },
+  /* near */ { count: 35,  len: [20,34], spd: [22,35],  w: 1.6, alpha: [.30,.48], blue: 205 },
+];
+const WIND = 0.22; // horizontal fraction of vertical speed
+
+class RainDrop {
+  constructor(layer, layerIdx) {
+    this.l = layer;
+    this.li = layerIdx;
+    this.spawn(true);
+  }
+  spawn(randomY) {
+    this.x = Math.random() * (W + 200) - 100;
+    this.y = randomY ? Math.random() * H : -30;
+    this.len   = this.l.len[0]   + Math.random() * (this.l.len[1]   - this.l.len[0]);
+    this.speed = this.l.spd[0]   + Math.random() * (this.l.spd[1]   - this.l.spd[0]);
+    this.alpha = this.l.alpha[0] + Math.random() * (this.l.alpha[1] - this.l.alpha[0]);
+  }
+  update() {
+    const vy = this.speed;
+    const vx = vy * WIND;
+    this.x += vx;
+    this.y += vy;
+    if (this.y > H + 40) this.spawn(false);
+  }
+  draw() {
+    const vx = this.speed * WIND;
+    const vy = this.speed;
+    const nx = vx / this.speed, ny = vy / this.speed;
+    const g = ctx.createLinearGradient(
+      this.x, this.y,
+      this.x + nx * this.len, this.y + ny * this.len
+    );
+    const c = this.l.blue;
+    g.addColorStop(0, `rgba(${c-30},${c},${c+30},0)`);
+    g.addColorStop(1, `rgba(${c-30},${c},${c+30},${this.alpha})`);
+    ctx.beginPath();
+    ctx.strokeStyle = g;
+    ctx.lineWidth = this.l.w;
+    ctx.lineCap = 'round';
+    ctx.moveTo(this.x, this.y);
+    ctx.lineTo(this.x + nx * this.len, this.y + ny * this.len);
+    ctx.stroke();
+  }
+}
+
+/* ════════════════════════════════════
+   MOTE SYSTEM — sunny pollen
+   ════════════════════════════════════ */
+class Mote {
+  constructor() { this.reset(true); }
+  reset(init) {
+    this.x = Math.random() * W;
+    this.y = init ? Math.random() * H : H + 10;
+    this.r = .8 + Math.random() * 1.6;
+    this.vx = (Math.random() - .5) * .4;
+    this.vy = -(0.3 + Math.random() * 0.7);
+    this.life = 1;
+    this.decay = .002 + Math.random() * .003;
+    this.maxAlpha = .25 + Math.random() * .35;
+  }
+  update() {
+    this.x += this.vx + Math.sin(Date.now() * .0005 + this.x) * .15;
+    this.y += this.vy;
+    this.life -= this.decay;
+    if (this.life <= 0 || this.y < -10) this.reset(false);
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.globalAlpha = this.maxAlpha * this.life;
+    ctx.fillStyle = '#e8c85a';
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+/* ════════════════════════════════════
+   CLOUD SYSTEM — overcast
+   ════════════════════════════════════ */
+class Cloud {
+  constructor() { this.reset(true); }
+  reset(init) {
+    this.x = init ? Math.random() * W : -300;
+    this.y = 30 + Math.random() * H * .5;
+    this.w = 120 + Math.random() * 200;
+    this.h = this.w * (.28 + Math.random() * .2);
+    this.spd = .12 + Math.random() * .25;
+    this.alpha = .08 + Math.random() * .12;
+  }
+  update() {
+    this.x += this.spd;
+    if (this.x > W + 300) this.reset(false);
+  }
+  draw() {
+    ctx.globalAlpha = this.alpha;
+    ctx.fillStyle = '#c8d0cc';
+    // elongated ellipse
+    ctx.beginPath();
+    ctx.ellipse(this.x, this.y, this.w/2, this.h/2, 0, 0, Math.PI*2);
+    ctx.fill();
+    // secondary bump
+    ctx.beginPath();
+    ctx.ellipse(this.x - this.w*.18, this.y - this.h*.3,
+                this.w*.3, this.h*.55, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(this.x + this.w*.15, this.y - this.h*.2,
+                this.w*.22, this.h*.45, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+/* ════════════════════════════════════
+   SUN BLOOM — clear day
+   ════════════════════════════════════ */
+function drawSunBloom() {
+  const grd = ctx.createRadialGradient(W*.85, H*.1, 0, W*.85, H*.1, W*.55);
+  const t = Date.now() * .0008;
+  const pulse = 0.9 + Math.sin(t) * 0.08;
+  grd.addColorStop(0,   `rgba(255,235,120,${.22 * pulse})`);
+  grd.addColorStop(.3,  `rgba(240,200,80,${.1 * pulse})`);
+  grd.addColorStop(.65, `rgba(220,180,60,${.04 * pulse})`);
+  grd.addColorStop(1,   'rgba(200,160,40,0)');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, W, H);
+}
+
+/* ════════════════════════════════════
+   LIGHTNING
+   ════════════════════════════════════ */
+let nextFlash = 0, flashing = false;
+function scheduleLightning() {
+  nextFlash = Date.now() + 4000 + Math.random() * 9000;
+}
+function triggerLightning() {
+  if (flashing) return;
+  flashing = true;
+  const el = document.getElementById('lightning');
+  el.style.transition = 'none';
+  el.style.opacity = '1';
+  setTimeout(() => {
+    el.style.transition = 'opacity 80ms';
+    el.style.opacity = '0';
+    setTimeout(() => {
+      el.style.transition = 'none';
+      el.style.opacity = '.7';
+      setTimeout(() => {
+        el.style.transition = 'opacity 200ms';
+        el.style.opacity = '0';
+        flashing = false;
+        scheduleLightning();
+      }, 60);
+    }, 90);
+  }, 35);
+}
+
+/* ════════════════════════════════════
+   INIT PARTICLE SETS
+   ════════════════════════════════════ */
+function initParticles(m) {
+  particles = [];
+  if (m === 'sunny') {
+    for (let i=0; i<55; i++) particles.push(new Mote());
+  } else if (m === 'cloudy') {
+    for (let i=0; i<6; i++) particles.push(new Cloud());
+  } else if (m === 'rainy') {
+    RAIN_LAYERS.forEach(l => {
+      for (let i=0; i<l.count; i++) particles.push(new RainDrop(l));
+    });
+  } else if (m === 'storm') {
+    const heavy = { ...RAIN_LAYERS[0], count:120, alpha:[.14,.26] };
+    const heavyMid = { ...RAIN_LAYERS[1], count:90,  alpha:[.28,.46] };
+    const heavyNear= { ...RAIN_LAYERS[2], count:55,  alpha:[.42,.65], len:[22,40], spd:[28,45] };
+    [heavy, heavyMid, heavyNear].forEach(l => {
+      for (let i=0; i<l.count; i++) particles.push(new RainDrop(l));
+    });
+    scheduleLightning();
+  }
+}
+
+/* ════════════════════════════════════
+   RENDER LOOP
+   ════════════════════════════════════ */
+function render() {
+  ctx.clearRect(0, 0, W, H);
+
+  if (mode === 'sunny') {
+    drawSunBloom();
+    particles.forEach(p => { p.update(); p.draw(); });
+  } else if (mode === 'cloudy') {
+    particles.forEach(p => { p.update(); p.draw(); });
+  } else if (mode === 'rainy') {
+    particles.forEach(p => { p.update(); p.draw(); });
+  } else if (mode === 'storm') {
+    particles.forEach(p => { p.update(); p.draw(); });
+    if (Date.now() > nextFlash && !flashing) triggerLightning();
+  }
+
+  raf = requestAnimationFrame(render);
+}
+
+/* ════════════════════════════════════
+   WEATHER CONFIG
+   ════════════════════════════════════ */
+const CONFIG = {
+  sunny:  { temp:'14°', lo:'6°',  cond:'Clear · Dry',         greeting:'Good day, Ian',    pipColor:'#a0c040', alert:'Clear skies — a good day to get out in the garden' },
+  cloudy: { temp:'11°', lo:'5°',  cond:'Overcast · Dry',      greeting:'Good day, Ian',    pipColor:'#9aaa9a', alert:'Overcast in Kildare today — mild, stay close to the beds' },
+  rainy:  { temp:'9°',  lo:'4°',  cond:'Rain · 8.4mm',        greeting:'Good day, Ian',    pipColor:'#5090c0', alert:'Rain expected — hold off on outdoor sowing today' },
+  storm:  { temp:'7°',  lo:'2°',  cond:'Thunderstorm · 21mm', greeting:'Good day, Ian',    pipColor:'#8888cc', alert:'Storm warning — stay in and plan your week' },
+};
+
+function setWeather(key, btn) {
+  mode = key;
+  cancelAnimationFrame(raf);
+  initParticles(key);
+  render();
+
+  const page = document.getElementById('page');
+  page.className = 'page ' + key;
+
+  const c = CONFIG[key];
+  document.getElementById('wx-temp').innerHTML = c.temp + `<span class="wx-lo">/${c.lo}</span>`;
+  document.getElementById('wx-cond').textContent = c.cond;
+  document.getElementById('greeting').textContent = c.greeting;
+  document.getElementById('pip').style.background = c.pipColor;
+  document.getElementById('alert-text').textContent = c.alert;
+
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+
+  if (window.__companion) window.__companion.select(key, btn.textContent.trim());
+}
+
+initParticles('sunny');
+render();
+</script>
+</body>
+</html>
