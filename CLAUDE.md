@@ -40,7 +40,7 @@ app/
 
 components/
   ui/               shadcn/ui — DO NOT manually edit
-  layout/           Sidebar, Header, MobileNav
+  layout/           Sidebar, Header, MobileNav, FeedbackButton
   dashboard/        WeatherCard, QuickLogWidget, WeatherAlerts
   beds/             BedCard, BedForm, PlantingCard, PlantingForm
   calendar/         CalendarPlantCard, MonthSelector
