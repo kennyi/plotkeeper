@@ -33,7 +33,34 @@
       "Bash(cat \"C:/Users/Ian/Desktop/plotkeeper/.superpowers/brainstorm/\"*/.server-info)",
       "Bash(cat C:/Users/Ian/Desktop/plotkeeper/.superpowers/brainstorm/*/.server-info)",
       "Bash(gh repo:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(git fetch:*)",
+      "Skill(update-config)",
+      "Bash(node -e \"JSON.parse\\(require\\(''fs''\\).readFileSync\\(''.claude/settings.local.json'',''utf8''\\)\\); console.log\\(''valid JSON''\\)\")",
+      "Bash(node -e \"const fs=require\\(''''fs''''\\);let ctx='''''''';if\\(fs.existsSync\\(''''./Claude Skill Tree''''\\)\\){ctx+=''''CLAUDE SKILL TREE:\\\\n''''+fs.readFileSync\\(''''./Claude Skill Tree'''',''''utf8''''\\)+''''\\\\n\\\\n'''';}if\\(fs.existsSync\\(''''./TASK.md''''\\)\\){ctx+=''''Active TASK.md:\\\\n''''+fs.readFileSync\\(''''./TASK.md'''',''''utf8''''\\);}else{ctx+=''''No TASK.md found. Ask the user what their task or focus is for this session, then create TASK.md with: task title, goal, what done looks like, what NOT to change without asking. Under 20 lines.'''';}console.log\\(JSON.stringify\\({hookSpecificOutput:{hookEventName:''''SessionStart'''',additionalContext:ctx}}\\)\\);\")"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs');let ctx='';if(fs.existsSync('./Claude Skill Tree')){ctx+='CLAUDE SKILL TREE:\\n'+fs.readFileSync('./Claude Skill Tree','utf8')+'\\n\\n';}if(fs.existsSync('./TASK.md')){ctx+='Active TASK.md:\\n'+fs.readFileSync('./TASK.md','utf8');}else{ctx+='No TASK.md found. Ask the user what their task or focus is for this session, then create TASK.md with: task title, goal, what done looks like, what NOT to change without asking. Under 20 lines.';}console.log(JSON.stringify({hookSpecificOutput:{hookEventName:'SessionStart',additionalContext:ctx}}));\"",
+            "statusMessage": "Loading session task..."
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "rm -f ./TASK.md 2>/dev/null || true"
+          }
+        ]
+      }
     ]
   }
 }
