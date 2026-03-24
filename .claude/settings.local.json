@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__supabase__execute_sql",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr:*)",
+      "Read(//c/Users/Ian/**)",
+      "Read(//c/Program Files/GitHub CLI/**)",
+      "Read(//c/Program Files \\(x86\\)/**)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" pr create --title \"Fix 6 RLS security vulnerabilities\" --body \"$\\(cat <<'EOF'\n## Summary\n\nSecurity audit of Supabase RLS policies revealed 6 vulnerabilities, all fixed in migration `023_fix_rls_security_audit_2026_03_12.sql`:\n\n- **`bed_photos` / `planting_photos`** — RLS was completely disabled; any unauthenticated request could read or write all rows. RLS now enabled with `authenticated` + `user_id` scoped policies.\n- **`custom_tasks` / `planting_task_events`** — Policies used the `public` role with `qual = true`, meaning fully open to unauthenticated callers. Replaced with `authenticated` + `user_id` scoped policies.\n- **`plants`** — `authenticated_all` policy \\(qual = true\\) was OR'd with the more restrictive per-command policies, rendering them all ineffective. Any authenticated user could modify or delete any plant. Policy dropped; `update_own_plants` also rebuilt with explicit `WITH CHECK`.\n- **`planting_health_logs`** — Policy targeted `public` role instead of `authenticated`, and had no explicit `WITH CHECK`. Replaced with a correct `authenticated` policy.\n\n## Test plan\n\n- [ ] Verify authenticated users can still read/write their own rows on all affected tables\n- [ ] Verify unauthenticated requests \\(anon key only\\) are rejected on all affected tables\n- [ ] Verify a user cannot read or modify another user's `custom_tasks`, `planting_task_events`, or `plants`\n- [ ] Check for any `bed_photos` / `planting_photos` rows with `user_id = NULL` that may now be inaccessible — backfill if needed\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\nEOF\n\\)\")",
+      "Bash(grep -l \"user_id\" /c/Users/Ian/Desktop/plotkeeper/supabase/migrations/*.sql)",
+      "Bash(grep -n \"is_indoor\\\\|photo_url\" /c/Users/Ian/Desktop/plotkeeper/supabase/migrations/*.sql | head -30)",
+      "Bash(grep -n \"getPlants\\\\|getMyPlants\" /c/Users/Ian/Desktop/plotkeeper/app/*.tsx /c/Users/Ian/Desktop/plotkeeper/app/**/*.tsx 2>/dev/null | head -20)",
+      "mcp__supabase__apply_migration",
+      "Bash(npm run:*)",
+      "Bash(npx tsc:*)",
+      "Bash(./node_modules/.bin/tsc --noEmit 2>&1)",
+      "Bash(cmd //c \"node_modules\\\\\\\\.bin\\\\\\\\tsc --noEmit 2>&1\")",
+      "Bash(ls node_modules/.bin/tsc* 2>/dev/null || ls node_modules/typescript/bin/ 2>/dev/null)",
+      "Bash(npm install:*)",
+      "Bash(cd \"C:/Users/Ian/Desktop/plotkeeper\" && npm test 2>&1)",
+      "mcp__supabase__list_migrations",
+      "mcp__supabase__list_tables",
+      "Bash(cd \"C:/Users/Ian/Desktop/plotkeeper\" && npx playwright install chromium 2>&1 | tail -5)",
+      "Bash(git commit:*)",
+      "Bash(npx vitest:*)",
+      "Bash(ls C:/Users/Ian/Desktop/plotkeeper/app/plantings/[id]/)",
+      "Bash(grep -n \"vitest\\\\|test\\(\" C:/Users/Ian/Desktop/plotkeeper/app/actions/__tests__/*.ts)",
+      "Bash(find C:/Users/Ian/Desktop/plotkeeper -name *.test.ts -o -name *.spec.ts)",
+      "Bash(bash \"C:/Users/Ian/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.5/skills/brainstorming/scripts/start-server.sh\" --project-dir \"C:/Users/Ian/Desktop/plotkeeper\")",
+      "Bash(cat \"C:/Users/Ian/Desktop/plotkeeper/.superpowers/brainstorm/\"*/.server-info)",
+      "Bash(cat C:/Users/Ian/Desktop/plotkeeper/.superpowers/brainstorm/*/.server-info)",
+      "Bash(gh repo:*)",
+      "Bash(ls:*)"
+    ]
+  }
+}
